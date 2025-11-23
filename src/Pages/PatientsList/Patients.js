@@ -93,7 +93,7 @@ export default function Patients() {
       </div>
 
       {/* Patients Table */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
+      <div className="bg-white rounded-xl overflow-hidden">
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>

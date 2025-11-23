@@ -192,7 +192,7 @@ export const adminMenuItems = [
     icon: UserCheck,
   },
   { path: "dentists", label: "Dentists List", icon: Users },
-  { path: "patients", label: "Manage Patients", icon: Activity },
+  { path: "patients", label: "Patients Lists", icon: Activity },
   { path: "appointments", label: "All Appointments", icon: Calendar },
   { path: "payments", label: "Revenue", icon: BarChart3 },
   { path: "reports", label: "Reports", icon: FileText },

@@ -95,7 +95,7 @@ const router = createBrowserRouter([
 
       {
         path: "dentists",
-        element: <h2>Manage Dentists</h2>,
+        element: <DoctorList />,
       },
       {
         path: "prescriptions",
