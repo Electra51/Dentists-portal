@@ -14,12 +14,17 @@ import {
   Shield,
   X,
   Loader2,
+  CheckCircle, // নতুন
+  XCircle, // নতুন
+  AlertCircle, // নতুন
+  Send, // নতুন
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useUploadUserImageMutation,
+  useRequestVerificationMutation, // নতুন import
 } from "../../redux/api/authApi";
 import InfoItem from "./InfoItem";
 import SelectField from "../../Components/SelectField";
@@ -42,6 +47,14 @@ export default function Profile() {
     useUpdateUserProfileMutation();
   const [uploadImage, { isLoading: isUploadingImage }] =
     useUploadUserImageMutation();
+
+  // নতুন mutation hook
+  const [requestVerification, { isLoading: isRequestingVerification }] =
+    useRequestVerificationMutation();
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
   const currentUser = profileData?.user;
 
   const userType =
@@ -102,6 +115,32 @@ export default function Profile() {
     }
   };
 
+  // নতুন function - Verification Request
+  const handleRequestVerification = async () => {
+    // Check if profile is complete
+    if (
+      !currentUser.specialization ||
+      !currentUser.bmdcNumber ||
+      !currentUser.qualification
+    ) {
+      toast.error(
+        "Please complete your profile before requesting verification"
+      );
+      return;
+    }
+
+    try {
+      const res = await requestVerification().unwrap();
+      toast.success(res.message || "Verification request sent successfully!");
+      refetch(); // Refresh profile data
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.data?.message || "Failed to send verification request"
+      );
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -135,6 +174,47 @@ export default function Profile() {
   };
   console.log("currentUser", currentUser);
 
+  // Verification status component helper
+  const getVerificationBadge = () => {
+    const status = currentUser.verificationStatus;
+
+    const badges = {
+      approved: {
+        bgColor: "bg-green-100",
+        textColor: "text-green-700",
+        icon: <CheckCircle className="w-4 h-4" />,
+        text: "Verified",
+      },
+      pending: {
+        bgColor: "bg-yellow-100",
+        textColor: "text-yellow-700",
+        icon: <Clock className="w-4 h-4" />,
+        text: "Pending",
+      },
+      rejected: {
+        bgColor: "bg-red-100",
+        textColor: "text-red-700",
+        icon: <XCircle className="w-4 h-4" />,
+        text: "Rejected",
+      },
+      not_requested: {
+        bgColor: "bg-gray-100",
+        textColor: "text-gray-700",
+        icon: <AlertCircle className="w-4 h-4" />,
+        text: "Not Verified",
+      },
+    };
+
+    const badge = badges[status] || badges.not_requested;
+    return (
+      <span
+        className={`flex items-center gap-1.5 ${badge.bgColor} ${badge.textColor} px-3 py-1 rounded-full text-xs font-semibold`}>
+        {badge.icon}
+        {badge.text}
+      </span>
+    );
+  };
+
   return (
     <div className="">
       <div className="max-w-7xl mx-auto mt-7">
@@ -166,6 +246,8 @@ export default function Profile() {
                   }`}>
                   {userType.toUpperCase()}
                 </span>
+                {/* Verification Badge - শুধু Dentist দের জন্য */}
+                {userType === "dentist" && getVerificationBadge()}
               </div>
               <div className="flex flex-col gap-2 text-gray-600">
                 <div className="flex items-center gap-2">
@@ -277,49 +359,183 @@ export default function Profile() {
         )}
 
         {userType === "dentist" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Award className="w-5 h-5 text-cyan-500" />
-                Professional Information
-              </h2>
-              <div className="space-y-3">
-                <InfoItem
-                  label="Specialization"
-                  value={currentUser.specialization || "Not provided"}
-                />
-                <InfoItem
-                  label="BMDC Number"
-                  value={currentUser.bmdcNumber || "Not provided"}
-                />
-                <InfoItem
-                  label="Experience"
-                  value={currentUser.experience || "Not provided"}
-                />
-                <InfoItem
-                  label="Qualification"
-                  value={currentUser.qualification || "Not provided"}
-                />
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-cyan-500" />
+                  Professional Information
+                </h2>
+                <div className="space-y-3">
+                  <InfoItem
+                    label="Specialization"
+                    value={currentUser.specialization || "Not provided"}
+                  />
+                  <InfoItem
+                    label="BMDC Number"
+                    value={currentUser.bmdcNumber || "Not provided"}
+                  />
+                  <InfoItem
+                    label="Experience"
+                    value={currentUser.experience || "Not provided"}
+                  />
+                  <InfoItem
+                    label="Qualification"
+                    value={currentUser.qualification || "Not provided"}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-cyan-500" />
+                  Work Details
+                </h2>
+                <div className="space-y-3">
+                  <InfoItem
+                    label="Department"
+                    value={currentUser.department || "Not provided"}
+                  />
+                  <InfoItem
+                    label="Schedule"
+                    value={currentUser.schedule || "Not provided"}
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-cyan-500" />
-                Work Details
-              </h2>
-              <div className="space-y-3">
-                <InfoItem
-                  label="Department"
-                  value={currentUser.department || "Not provided"}
-                />
-                <InfoItem
-                  label="Schedule"
-                  value={currentUser.schedule || "Not provided"}
-                />
-              </div>
+            <div className="mt-6">
+              {currentUser.verificationStatus === "not_requested" && (
+                <div className="bg-orange-50 border border-orange-300 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Send className="w-5 h-5 text-[#eaab4c] mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-[#eaab4c] mb-1">
+                        Complete Your Profile Verification
+                      </h3>
+                      <p className="text-sm text-[#eaab4c] mb-3">
+                        Submit your profile for admin verification to start
+                        accepting appointments and appear in the doctors list on
+                        the landing page.
+                      </p>
+                      <button
+                        onClick={handleRequestVerification}
+                        disabled={isRequestingVerification}
+                        className="bg-orange-500 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isRequestingVerification ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Sending Request...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Request Verification
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentUser.verificationStatus === "pending" && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-yellow-900 mb-1">
+                        Verification Pending
+                      </h3>
+                      <p className="text-sm text-yellow-700">
+                        Your verification request is under review. Admin will
+                        verify your credentials soon. You'll be notified once
+                        approved.
+                      </p>
+                      {currentUser.verificationRequestDate && (
+                        <p className="text-base text-yellow-600 mt-2">
+                          Requested on:{" "}
+                          {new Date(
+                            currentUser.verificationRequestDate
+                          ).toLocaleDateString("en-GB", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentUser.verificationStatus === "rejected" && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-red-900 mb-1">
+                        Verification Rejected
+                      </h3>
+                      <p className="text-sm text-red-700 mb-2">
+                        {currentUser.rejectionReason ||
+                          "Your verification request was rejected. Please update your credentials and submit again."}
+                      </p>
+                      <button
+                        onClick={handleRequestVerification}
+                        disabled={isRequestingVerification}
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        {isRequestingVerification ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Resubmitting...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="w-4 h-4" />
+                            Resubmit Request
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {currentUser.verificationStatus === "approved" && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <h3 className="font-semibold text-green-900 mb-1">
+                        ✅ Profile Verified!
+                      </h3>
+                      <p className="text-sm text-green-700">
+                        Congratulations! Your profile has been verified. You can
+                        now set appointment slots and patients can book
+                        appointments with you.
+                      </p>
+                      {currentUser.verifiedAt && (
+                        <p className="text-xs text-green-600 mt-2">
+                          Verified on:{" "}
+                          {new Date(currentUser.verifiedAt).toLocaleDateString(
+                            "en-GB",
+                            {
+                              day: "numeric",
+                              month: "long",
+                              year: "numeric",
+                            }
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
+          </>
         )}
 
         {userType === "admin" && (

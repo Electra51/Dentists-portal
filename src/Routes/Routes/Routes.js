@@ -13,6 +13,8 @@ import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/ProfilePage/Profile";
 import DoctorList from "../../Pages/DoctorList/DoctorList";
+import DoctorVerification from "../../Pages/DoctorVerification/DoctorVerification";
+import Patients from "../../Pages/PatientsList/Patients";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -83,8 +85,12 @@ const router = createBrowserRouter([
         element: <h2>Medical Records</h2>,
       },
       {
+        path: "doctor-verification",
+        element: <DoctorVerification />,
+      },
+      {
         path: "patients",
-        element: <h2>patients</h2>,
+        element: <Patients />,
       },
 
       {

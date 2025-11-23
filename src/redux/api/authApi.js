@@ -43,7 +43,10 @@ export const authApi = createApi({
       }),
       invalidatesTags: ["User"],
     }),
-
+    getPendingDoctors: builder.query({
+      query: () => "/pending-doctors",
+      providesTags: ["PendingDoctors"],
+    }),
     uploadUserImage: builder.mutation({
       query: ({ email, formData }) => ({
         url: `/profile/upload/${email}`,
@@ -51,6 +54,38 @@ export const authApi = createApi({
         body: formData,
       }),
       invalidatesTags: ["User"],
+    }),
+    // Verification request endpoint
+    requestVerification: builder.mutation({
+      query: () => ({
+        url: "/request-verification",
+        method: "POST",
+      }),
+      invalidatesTags: ["User"],
+    }),
+    // Approve doctor
+    approveDoctor: builder.mutation({
+      query: (doctorId) => ({
+        url: `approve-doctor/${doctorId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
+    }),
+
+    // Get verification status
+    getVerificationStatus: builder.query({
+      query: () => "/verification-status",
+      providesTags: ["User"],
+    }),
+
+    // Reject doctor
+    rejectDoctor: builder.mutation({
+      query: ({ doctorId, reason }) => ({
+        url: `/reject-doctor/${doctorId}`,
+        method: "PUT",
+        body: { reason },
+      }),
+      invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
     }),
   }),
 });
@@ -61,4 +96,9 @@ export const {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useUploadUserImageMutation,
+  useRequestVerificationMutation,
+  useGetVerificationStatusQuery,
+  useApproveDoctorMutation,
+  useRejectDoctorMutation,
+  useGetPendingDoctorsQuery,
 } = authApi;

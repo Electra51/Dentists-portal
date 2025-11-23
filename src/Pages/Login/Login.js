@@ -5,14 +5,15 @@ import { Link, useNavigate } from "react-router-dom";
 import LogoName from "../../Components/LogoName";
 import FooterTag from "../../Components/FooterTag";
 import { AuthContext } from "../../Contexts/AuthProvider";
-import { useLoginUserMutation } from "../../redux/api/authApi";
+import { authApi, useLoginUserMutation } from "../../redux/api/authApi";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 
 export default function Login() {
   const navigate = useNavigate();
   const { googleSignIn } = useContext(AuthContext);
   const [loginUser] = useLoginUserMutation();
-
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [selectedRole, setSelectedRole] = useState("0");
 
@@ -80,6 +81,9 @@ export default function Login() {
 
       localStorage.setItem("token", res.token);
       toast.success("Login Successful!");
+
+      // ✅ IMPORTANT: Redux cache reset করুন
+      dispatch(authApi.util.resetApiState());
 
       setTimeout(() => navigate("/dashboard"), 500);
     } catch (err) {

@@ -13,6 +13,7 @@ import {
   Settings,
   UserCircle,
   FolderOpen,
+  UserCheck,
 } from "lucide-react";
 
 export const gallaryData = [
@@ -185,7 +186,12 @@ export const patientMenuItems = [
 
 export const adminMenuItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "dentists", label: "Manage Dentists", icon: Users },
+  {
+    label: "Dentist Verification",
+    path: "doctor-verification",
+    icon: UserCheck,
+  },
+  { path: "dentists", label: "Dentists List", icon: Users },
   { path: "patients", label: "Manage Patients", icon: Activity },
   { path: "appointments", label: "All Appointments", icon: Calendar },
   { path: "payments", label: "Revenue", icon: BarChart3 },
