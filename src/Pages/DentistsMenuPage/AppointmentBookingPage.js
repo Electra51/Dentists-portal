@@ -12,8 +12,65 @@ import {
   ChevronRight,
   AlertCircle,
 } from "lucide-react";
+import {
+  useCreateAppointmentMutation,
+  useGetAvailableSlotsQuery,
+} from "../../redux/api/appointmentApi";
+import { useNavigate } from "react-router-dom";
 
 const AppointmentBookingPage = () => {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const navigate = useNavigate();
+  // Get available slots when date is selected
+  const { data: slotsData, isLoading: slotsLoading } =
+    useGetAvailableSlotsQuery(
+      {
+        doctorId: "6923e24cdfbeb3dd49851b68",
+        date: selectedDate ? selectedDate.toISOString().split("T")[0] : null,
+      },
+      { skip: !selectedDate }
+    );
+
+  const [createAppointment, { isLoading: bookingLoading }] =
+    useCreateAppointmentMutation();
+
+  // Handle booking
+  const handleConfirmAppointment = async () => {
+    try {
+      const appointmentData = {
+        doctorId: dentist._id,
+        appointmentDate: selectedDate.toISOString().split("T")[0],
+        appointmentTime: selectedTime,
+        appointmentTime24: convertTo24Hour(selectedTime), // Helper function
+        service: selectedService,
+        patientNotes: patientInfo.reason,
+        patientInfo: {
+          name: patientInfo.name,
+          phone: patientInfo.phone,
+          email: patientInfo.email,
+        },
+      };
+
+      const response = await createAppointment(appointmentData).unwrap();
+      alert("Appointment booked successfully!");
+      navigate("/appointments"); // Or wherever you want
+    } catch (error) {
+      alert(error?.data?.message || "Booking failed");
+    }
+  };
+
+  // Helper to convert 12hr to 24hr
+  const convertTo24Hour = (time12) => {
+    const [time, period] = time12.split(" ");
+    let [hours, minutes] = time.split(":");
+    hours = parseInt(hours);
+
+    if (period === "PM" && hours !== 12) hours += 12;
+    if (period === "AM" && hours === 12) hours = 0;
+
+    return `${String(hours).padStart(2, "0")}:${minutes}`;
+  };
+
   // Mock dentist data from API
   const dentist = {
     _id: "6923e24cdfbeb3dd49851b68",
@@ -62,7 +119,6 @@ const AppointmentBookingPage = () => {
   const avgRating = "4.8";
   const totalReviews = 156;
 
-  const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [selectedService, setSelectedService] = useState(
     "General Consultation"
@@ -208,30 +264,30 @@ const AppointmentBookingPage = () => {
     }
   };
 
-  const handleConfirmAppointment = () => {
-    if (
-      !selectedDate ||
-      !selectedTime ||
-      !patientInfo.name ||
-      !patientInfo.phone
-    ) {
-      alert("Please fill all required fields");
-      return;
-    }
+  //   const handleConfirmAppointment = () => {
+  //     if (
+  //       !selectedDate ||
+  //       !selectedTime ||
+  //       !patientInfo.name ||
+  //       !patientInfo.phone
+  //     ) {
+  //       alert("Please fill all required fields");
+  //       return;
+  //     }
 
-    const appointmentData = {
-      dentistId: dentist._id,
-      dentistName: dentist.name,
-      date: formatDate(selectedDate),
-      time: selectedTime,
-      service: selectedService,
-      patientInfo,
-      fee: dentist.settings.consultationFee,
-    };
+  //     const appointmentData = {
+  //       dentistId: dentist._id,
+  //       dentistName: dentist.name,
+  //       date: formatDate(selectedDate),
+  //       time: selectedTime,
+  //       service: selectedService,
+  //       patientInfo,
+  //       fee: dentist.settings.consultationFee,
+  //     };
 
-    console.log("Appointment Data:", appointmentData);
-    alert("Appointment booked successfully! Check console for details.");
-  };
+  //     console.log("Appointment Data:", appointmentData);
+  //     alert("Appointment booked successfully! Check console for details.");
+  //   };
 
   const timeSlots = useMemo(() => generateTimeSlots(), [selectedDate]);
   const calendarDays = generateCalendarDays();

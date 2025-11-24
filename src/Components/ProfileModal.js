@@ -217,6 +217,46 @@ const ProfileModal = ({
                   value={formData.department || ""}
                   onChange={handleInputChange}
                 />
+
+                <InputField
+                  label="Category"
+                  name="category"
+                  placeholder="e.g., Endodontist"
+                  value={formData.category || ""}
+                  onChange={handleInputChange}
+                />
+
+                <InputField
+                  label="Services (comma-separated)"
+                  name="services"
+                  placeholder="e.g., Root Canal, Dental Pain Diagnosis"
+                  value={
+                    Array.isArray(formData.services)
+                      ? formData.services.join(", ")
+                      : formData.services || ""
+                  }
+                  onChange={(e) => {
+                    const servicesArray = e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter((s) => s.length > 0);
+                    handleInputChange({
+                      target: {
+                        name: "services",
+                        value: servicesArray,
+                      },
+                    });
+                  }}
+                />
+
+                <InputField
+                  label="Bio"
+                  name="bio"
+                  placeholder="Write a short professional bio..."
+                  value={formData.bio || ""}
+                  onChange={handleInputChange}
+                  textarea
+                />
               </>
             )}
 

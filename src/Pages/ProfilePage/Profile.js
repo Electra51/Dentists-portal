@@ -360,6 +360,14 @@ export default function Profile() {
 
         {userType === "dentist" && (
           <>
+            <div className="bg-white rounded-xl shadow-sm px-6 py-4 mb-6">
+              <p>
+                <span className="font-semibold text-base underline">
+                  About Me:
+                </span>{" "}
+                {currentUser.bio || "Not provided"}
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -395,8 +403,19 @@ export default function Profile() {
                   <InfoItem
                     label="Department"
                     value={currentUser.department || "Not provided"}
+                  />{" "}
+                  <InfoItem
+                    label="Category"
+                    value={currentUser.category || "Not provided"}
                   />
-
+                  <InfoItem
+                    label="Services"
+                    value={
+                      currentUser.services && currentUser.services.length > 0
+                        ? currentUser.services.join(", ")
+                        : "Not provided"
+                    }
+                  />
                   <InfoItem
                     label="Last Login"
                     value={
