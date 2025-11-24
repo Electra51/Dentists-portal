@@ -1,11 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import Main from "../../Layout/Main";
-import About from "../../Pages/About/About";
-import Appointment from "../../Pages/Appointment/Appointment";
 import ContactUs from "../../Pages/ContactUs/ContactUs";
 import Dashboard from "../../Pages/Dashboard/Dashboard";
 import ErrorPage from "../../Pages/ErrorPage/ErrorPage";
-import Home from "../../Pages/Home/Home";
+
 import Login from "../../Pages/Login/Login";
 import Signup from "../../Pages/Login/Signup";
 import Reviews from "../../Pages/Reviews/Reviews";
@@ -14,10 +12,14 @@ import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/ProfilePage/Profile";
 import DoctorList from "../../Pages/DoctorList/DoctorList";
 import DoctorVerification from "../../Pages/DoctorVerification/DoctorVerification";
-import DoctorAppointment from "../../Pages/DoctorAppointment/DoctorAppointment";
-import DoctorSchedule from "../../Pages/DoctorSchedule/DoctorSchedule";
-import DentistSettingsPage from "../../Pages/DentistSettingsPage/DentistSettingsPage";
 import Patients from "../../Pages/PatientsList/Patients";
+import About from "../../Pages/AboutPage/About";
+import Home from "../../Pages/HomePage/Home";
+import Appointment from "../../Pages/AppointmentPage/Appointment";
+import DentistSettingsPage from "../../Pages/DoctorDashboardPage/DentistSettingsPage";
+import DoctorSchedule from "../../Pages/DoctorDashboardPage/DoctorSchedule";
+import DoctorAppointment from "../../Pages/DoctorDashboardPage/DoctorAppointment";
+import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -34,7 +36,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/doctors",
-        element: <DoctorList />,
+        element: <DentistsPage />,
       },
       {
         path: "/about",
