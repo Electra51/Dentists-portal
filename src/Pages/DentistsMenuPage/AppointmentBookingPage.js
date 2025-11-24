@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import React, { useState, useMemo } from "react";
 import {
   Calendar,
@@ -11,55 +13,41 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
-import {
-  useCreateAppointmentMutation,
-  useGetAvailableSlotsQuery,
-} from "../../redux/api/appointmentApi";
-import { useNavigate } from "react-router-dom";
+import { useCreateAppointmentMutation } from "../../redux/api/appointmentApi";
+import { useNavigate, useParams } from "react-router-dom";
+import { useGetDentistDetailsQuery } from "../../redux/api/doctorApi";
 
 const AppointmentBookingPage = () => {
-  const [selectedDate, setSelectedDate] = useState(null);
+  const { dentistId } = useParams();
   const navigate = useNavigate();
-  // Get available slots when date is selected
-  const { data: slotsData, isLoading: slotsLoading } =
-    useGetAvailableSlotsQuery(
-      {
-        doctorId: "6923e24cdfbeb3dd49851b68",
-        date: selectedDate ? selectedDate.toISOString().split("T")[0] : null,
-      },
-      { skip: !selectedDate }
-    );
+
+  const { data: dentistData } = useGetDentistDetailsQuery(dentistId);
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [selectedService, setSelectedService] = useState("");
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [patientInfo, setPatientInfo] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    reason: "",
+  });
 
   const [createAppointment, { isLoading: bookingLoading }] =
     useCreateAppointmentMutation();
+  console.log("dentistData", dentistData);
 
-  // Handle booking
-  const handleConfirmAppointment = async () => {
-    try {
-      const appointmentData = {
-        doctorId: dentist._id,
-        appointmentDate: selectedDate.toISOString().split("T")[0],
-        appointmentTime: selectedTime,
-        appointmentTime24: convertTo24Hour(selectedTime), // Helper function
-        service: selectedService,
-        patientNotes: patientInfo.reason,
-        patientInfo: {
-          name: patientInfo.name,
-          phone: patientInfo.phone,
-          email: patientInfo.email,
-        },
-      };
+  const dentist = dentistData.data?.dentist;
+  const avgRating = dentistData.data.avgRating || "0.0";
+  const totalReviews = dentistData.data.totalReviews || 0;
 
-      const response = await createAppointment(appointmentData).unwrap();
-      alert("Appointment booked successfully!");
-      navigate("/appointments"); // Or wherever you want
-    } catch (error) {
-      alert(error?.data?.message || "Booking failed");
-    }
-  };
+  if (selectedService === "" && dentist.services?.length > 0) {
+    setSelectedService(dentist.services[0]);
+  }
 
-  // Helper to convert 12hr to 24hr
   const convertTo24Hour = (time12) => {
     const [time, period] = time12.split(" ");
     let [hours, minutes] = time.split(":");
@@ -71,75 +59,40 @@ const AppointmentBookingPage = () => {
     return `${String(hours).padStart(2, "0")}:${minutes}`;
   };
 
-  // Mock dentist data from API
-  const dentist = {
-    _id: "6923e24cdfbeb3dd49851b68",
-    name: "Shaila Rahman",
-    email: "shaila@gmail.com",
-    profileImage:
-      "https://res.cloudinary.com/dwkogyk75/image/upload/v1763959506/profile_images/user-1763959504353.jpg",
-    phone: "+8801712002200",
-    specialization: "Orthodontics",
-    experience: "7 years",
-    settings: {
-      consultationFee: "500",
-      appointmentDuration: "30",
-    },
-    schedule: {
-      schedule: {
-        sunday: { isAvailable: false, slots: [] },
-        monday: {
-          isAvailable: true,
-          slots: [{ start: "15:00", end: "18:00" }],
+  const handleConfirmAppointment = async () => {
+    if (
+      !selectedDate ||
+      !selectedTime ||
+      !patientInfo.name ||
+      !patientInfo.phone
+    ) {
+      alert("Please fill all required fields");
+      return;
+    }
+
+    try {
+      const appointmentData = {
+        doctorId: dentist._id,
+        appointmentDate: selectedDate.toISOString().split("T")[0],
+        appointmentTime: selectedTime,
+        appointmentTime24: convertTo24Hour(selectedTime),
+        service: selectedService,
+        patientNotes: patientInfo.reason,
+        patientInfo: {
+          name: patientInfo.name,
+          phone: patientInfo.phone,
+          email: patientInfo.email,
         },
-        tuesday: {
-          isAvailable: true,
-          slots: [{ start: "09:00", end: "12:30" }],
-        },
-        wednesday: {
-          isAvailable: true,
-          slots: [{ start: "16:00", end: "19:40" }],
-        },
-        thursday: {
-          isAvailable: true,
-          slots: [{ start: "09:00", end: "17:00" }],
-        },
-        friday: {
-          isAvailable: true,
-          slots: [{ start: "17:00", end: "20:00" }],
-        },
-        saturday: {
-          isAvailable: true,
-          slots: [{ start: "09:00", end: "13:00" }],
-        },
-      },
-    },
+      };
+
+      const response = await createAppointment(appointmentData).unwrap();
+      alert("Appointment booked successfully!");
+      navigate("/appointments");
+    } catch (error) {
+      alert(error?.data?.message || "Booking failed");
+    }
   };
 
-  const avgRating = "4.8";
-  const totalReviews = 156;
-
-  const [selectedTime, setSelectedTime] = useState(null);
-  const [selectedService, setSelectedService] = useState(
-    "General Consultation"
-  );
-  const [currentMonth, setCurrentMonth] = useState(new Date(2025, 10, 1)); // November 2025
-  const [patientInfo, setPatientInfo] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    reason: "",
-  });
-
-  const services = [
-    "General Consultation",
-    "Braces & Aligners",
-    "Teeth Whitening",
-    "Dental Cleaning",
-    "Orthodontic Treatment",
-  ];
-
-  // Generate calendar days
   const generateCalendarDays = () => {
     const year = currentMonth.getFullYear();
     const month = currentMonth.getMonth();
@@ -149,21 +102,15 @@ const AppointmentBookingPage = () => {
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-
-    // Add empty cells for days before month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-
-    // Add actual days
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
-
     return days;
   };
 
-  // Check if a date is available based on doctor's schedule
   const isDateAvailable = (date) => {
     if (!date) return false;
     const today = new Date();
@@ -179,10 +126,10 @@ const AppointmentBookingPage = () => {
       "friday",
       "saturday",
     ][date.getDay()];
-    return dentist.schedule.schedule[dayName]?.isAvailable || false;
+
+    return dentist.schedule?.schedule?.[dayName]?.isAvailable || false;
   };
 
-  // Generate time slots for selected date
   const generateTimeSlots = () => {
     if (!selectedDate) return [];
 
@@ -195,12 +142,13 @@ const AppointmentBookingPage = () => {
       "friday",
       "saturday",
     ][selectedDate.getDay()];
-    const daySchedule = dentist.schedule.schedule[dayName];
+
+    const daySchedule = dentist.schedule?.schedule?.[dayName];
 
     if (!daySchedule?.isAvailable) return [];
 
     const slots = [];
-    const duration = parseInt(dentist.settings.appointmentDuration);
+    const duration = parseInt(dentist.settings?.appointmentDuration || 30);
 
     daySchedule.slots.forEach((slot) => {
       const [startHour, startMin] = slot.start.split(":").map(Number);
@@ -260,45 +208,19 @@ const AppointmentBookingPage = () => {
   const handleDateSelect = (date) => {
     if (isDateAvailable(date)) {
       setSelectedDate(date);
-      setSelectedTime(null); // Reset time when date changes
+      setSelectedTime(null);
     }
   };
 
-  //   const handleConfirmAppointment = () => {
-  //     if (
-  //       !selectedDate ||
-  //       !selectedTime ||
-  //       !patientInfo.name ||
-  //       !patientInfo.phone
-  //     ) {
-  //       alert("Please fill all required fields");
-  //       return;
-  //     }
-
-  //     const appointmentData = {
-  //       dentistId: dentist._id,
-  //       dentistName: dentist.name,
-  //       date: formatDate(selectedDate),
-  //       time: selectedTime,
-  //       service: selectedService,
-  //       patientInfo,
-  //       fee: dentist.settings.consultationFee,
-  //     };
-
-  //     console.log("Appointment Data:", appointmentData);
-  //     alert("Appointment booked successfully! Check console for details.");
-  //   };
-
-  const timeSlots = useMemo(() => generateTimeSlots(), [selectedDate]);
+  const timeSlots = useMemo(() => generateTimeSlots(), [selectedDate, dentist]);
   const calendarDays = generateCalendarDays();
   const isFormValid =
     selectedDate && selectedTime && patientInfo.name && patientInfo.phone;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4 mt-20">
           <button
             onClick={() => window.history.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -309,7 +231,6 @@ const AppointmentBookingPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Doctor Info Card */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex items-center gap-4 mb-4">
             <img
@@ -334,32 +255,31 @@ const AppointmentBookingPage = () => {
                   <Award className="w-4 h-4 text-cyan-500" />
                   <span>{dentist.experience}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-green-600 font-medium">Verified</span>
-                </div>
+                {dentist.verificationStatus === "approved" && (
+                  <div className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    <span className="text-green-600 font-medium">Verified</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="text-center bg-cyan-50 px-6 py-4 rounded-lg">
               <p className="text-sm text-gray-600">Consultation Fee</p>
               <p className="text-3xl font-bold text-cyan-600">
-                ৳{dentist.settings.consultationFee}
+                ৳{dentist.settings?.consultationFee || "500"}
               </p>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Date & Time Selection */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Calendar */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-cyan-500" />
                 Select Date
               </h2>
 
-              {/* Month Navigation */}
               <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={handlePrevMonth}
@@ -379,7 +299,6 @@ const AppointmentBookingPage = () => {
                 </button>
               </div>
 
-              {/* Calendar Grid */}
               <div className="grid grid-cols-7 gap-2">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                   (day) => (
@@ -433,7 +352,6 @@ const AppointmentBookingPage = () => {
               </div>
             </div>
 
-            {/* Time Slots */}
             {selectedDate && (
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -467,35 +385,39 @@ const AppointmentBookingPage = () => {
               </div>
             )}
 
-            {/* Service Selection */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 Select Service
               </h2>
-              <div className="space-y-2">
-                {services.map((service) => (
-                  <label
-                    key={service}
-                    className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      selectedService === service
-                        ? "border-cyan-500 bg-cyan-50"
-                        : "border-gray-200 hover:border-cyan-300"
-                    }`}>
-                    <input
-                      type="radio"
-                      name="service"
-                      value={service}
-                      checked={selectedService === service}
-                      onChange={(e) => setSelectedService(e.target.value)}
-                      className="w-4 h-4 text-cyan-500"
-                    />
-                    <span className="font-medium">{service}</span>
-                  </label>
-                ))}
-              </div>
+              {dentist.services && dentist.services.length > 0 ? (
+                <div className="space-y-2">
+                  {dentist.services.map((service) => (
+                    <label
+                      key={service}
+                      className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                        selectedService === service
+                          ? "border-cyan-500 bg-cyan-50"
+                          : "border-gray-200 hover:border-cyan-300"
+                      }`}>
+                      <input
+                        type="radio"
+                        name="service"
+                        value={service}
+                        checked={selectedService === service}
+                        onChange={(e) => setSelectedService(e.target.value)}
+                        className="w-4 h-4 text-cyan-500"
+                      />
+                      <span className="font-medium">{service}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">
+                  No services available
+                </p>
+              )}
             </div>
 
-            {/* Patient Information */}
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                 <User className="w-5 h-5 text-cyan-500" />
@@ -573,7 +495,6 @@ const AppointmentBookingPage = () => {
             </div>
           </div>
 
-          {/* Right Column - Summary */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
@@ -613,7 +534,9 @@ const AppointmentBookingPage = () => {
                   <MessageSquare className="w-5 h-5 text-gray-400 mt-1" />
                   <div>
                     <p className="text-sm text-gray-500">Service</p>
-                    <p className="font-semibold">{selectedService}</p>
+                    <p className="font-semibold">
+                      {selectedService || "Not selected"}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -624,20 +547,29 @@ const AppointmentBookingPage = () => {
                     Consultation Fee
                   </span>
                   <span className="font-bold text-cyan-600 text-2xl">
-                    ৳{dentist.settings.consultationFee}
+                    ৳{dentist.settings?.consultationFee || "500"}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={handleConfirmAppointment}
-                disabled={!isFormValid}
-                className={`w-full py-3 rounded-lg font-semibold transition-all ${
-                  isFormValid
+                disabled={!isFormValid || bookingLoading}
+                className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
+                  isFormValid && !bookingLoading
                     ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}>
-                {isFormValid ? "Confirm Appointment" : "Fill Required Fields"}
+                {bookingLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Booking...
+                  </>
+                ) : isFormValid ? (
+                  "Confirm Appointment"
+                ) : (
+                  "Fill Required Fields"
+                )}
               </button>
 
               <div className="mt-4 p-3 bg-yellow-50 rounded-lg">

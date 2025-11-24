@@ -17,16 +17,16 @@ import {
   Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
 import { useGetDentistDetailsQuery } from "../../redux/api/doctorApi";
 import { useParams } from "react-router-dom";
 
 const DentistDetailsPage = () => {
   const { dentistId } = useParams();
+  console.log("dentistId", dentistId);
+
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
   const { data, isLoading, isError } = useGetDentistDetailsQuery(dentistId);
-
   const dentist = data?.data?.dentist;
   const avgRating = data?.data?.avgRating || "0.0";
   const totalReviews = data?.data?.totalReviews || 0;
@@ -74,7 +74,6 @@ const DentistDetailsPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header Banner */}
       <div className="bg-gradient-to-r from-secondary to-info hover:opacity-90 text-white py-8">
         <div className="max-w-7xl mx-auto px-4 mt-14">
           <button
@@ -126,7 +125,7 @@ const DentistDetailsPage = () => {
                 Consultation Fee
               </p>
               <p className="text-3xl font-bold">
-                ৳{dentist.settings.consultationFee}
+                ৳ {dentist.settings.consultationFee}
               </p>
               <button
                 className="mt-4 bg-white text-cyan-600 px-6 py-2 rounded-lg font-semibold hover:bg-cyan-50 transition-colors flex items-center gap-2 mx-auto"
@@ -173,6 +172,7 @@ const DentistDetailsPage = () => {
                     About
                   </h2>
                   <p className="text-gray-700 leading-relaxed">
+                    {dentist?.bio}
                     Specialized in {dentist.specialization} with{" "}
                     {dentist.experience} of experience. Providing quality dental
                     care with modern techniques and patient-centered approach.
@@ -226,12 +226,7 @@ const DentistDetailsPage = () => {
                     Services Offered
                   </h2>
                   <div className="flex flex-wrap gap-3">
-                    {[
-                      "Braces & Aligners",
-                      "Teeth Whitening",
-                      "Dental Cleaning",
-                      "Orthodontic Consultation",
-                    ].map((service, index) => (
+                    {dentist?.services?.map((service, index) => (
                       <span
                         key={index}
                         className="px-4 py-2 bg-cyan-50 text-cyan-700 rounded-full font-medium">
@@ -463,6 +458,12 @@ const DentistDetailsPage = () => {
                   <span className="text-gray-600">Total Patients</span>
                   <span className="font-bold text-gray-900">
                     {totalPatients}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">Category</span>
+                  <span className="font-bold text-gray-900">
+                    {dentist?.category}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
