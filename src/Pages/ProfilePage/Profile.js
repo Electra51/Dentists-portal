@@ -396,9 +396,14 @@ export default function Profile() {
                     label="Department"
                     value={currentUser.department || "Not provided"}
                   />
+
                   <InfoItem
-                    label="Schedule"
-                    value={currentUser.schedule || "Not provided"}
+                    label="Last Login"
+                    value={
+                      currentUser.lastLogin
+                        ? new Date(currentUser.lastLogin).toLocaleString()
+                        : "N/A"
+                    }
                   />
                 </div>
               </div>

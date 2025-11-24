@@ -217,13 +217,6 @@ const ProfileModal = ({
                   value={formData.department || ""}
                   onChange={handleInputChange}
                 />
-                <InputField
-                  label="Schedule"
-                  name="schedule"
-                  placeholder="e.g., Sat-Thu: 9 AM - 5 PM"
-                  value={formData.schedule || ""}
-                  onChange={handleInputChange}
-                />
               </>
             )}
 

@@ -14,6 +14,8 @@ import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/ProfilePage/Profile";
 import DoctorList from "../../Pages/DoctorList/DoctorList";
 import DoctorVerification from "../../Pages/DoctorVerification/DoctorVerification";
+import DoctorAppointment from "../../Pages/DoctorAppointment/DoctorAppointment";
+import DoctorSchedule from "../../Pages/DoctorSchedule/DoctorSchedule";
 import Patients from "../../Pages/PatientsList/Patients";
 const router = createBrowserRouter([
   {
@@ -74,7 +76,7 @@ const router = createBrowserRouter([
       },
       {
         path: "appointments",
-        element: <h2>Appointments</h2>,
+        element: <DoctorAppointment />,
       },
       {
         path: "my-appointments",
@@ -103,7 +105,7 @@ const router = createBrowserRouter([
       },
       {
         path: "schedule",
-        element: <h2>schedule page</h2>,
+        element: <DoctorSchedule />,
       },
       {
         path: "reviews",
