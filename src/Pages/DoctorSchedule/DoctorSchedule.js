@@ -36,7 +36,7 @@ const DEFAULT_SCHEDULE = {
 };
 
 export default function DoctorSchedule() {
-  const { data, isLoading, refetch } = useGetDoctorScheduleQuery();
+  const { data, isLoading } = useGetDoctorScheduleQuery();
   const [updateSchedule, { isLoading: isUpdating }] =
     useUpdateDoctorScheduleMutation();
 
@@ -44,24 +44,26 @@ export default function DoctorSchedule() {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
+    // Backend response structure: { success: true, data: doctor.schedule }
+    // So we need to access data?.data directly
     if (data?.data) {
-      const merged = { ...DEFAULT_SCHEDULE };
+      const backendSchedule = data.data;
 
-      for (const day of Object.keys(DEFAULT_SCHEDULE)) {
-        if (data.data[day]) {
-          merged[day] = {
-            isAvailable:
-              typeof data.data[day].isAvailable === "boolean"
-                ? data.data[day].isAvailable
-                : DEFAULT_SCHEDULE[day].isAvailable,
-            slots: Array.isArray(data.data[day].slots)
-              ? data.data[day].slots
-              : DEFAULT_SCHEDULE[day].slots,
-          };
-        }
+      console.log("Backend Schedule:", backendSchedule); // Debug log
+
+      // Check if it's wrapped in schedule key or direct
+      const actualSchedule = backendSchedule.schedule || backendSchedule;
+
+      const hasBackendData =
+        actualSchedule && Object.keys(actualSchedule).length > 0;
+
+      if (hasBackendData) {
+        setSchedule(actualSchedule);
+      } else {
+        setSchedule(DEFAULT_SCHEDULE);
       }
 
-      setSchedule(merged);
+      setHasChanges(false);
     }
   }, [data]);
 
@@ -81,7 +83,7 @@ export default function DoctorSchedule() {
       ...prev,
       [day]: {
         ...prev[day],
-        slots: [...prev[day].slots, { start: "09:00", end: "10:00" }],
+        slots: [...(prev[day]?.slots || []), { start: "09:00", end: "10:00" }],
       },
     }));
     setHasChanges(true);
@@ -116,37 +118,53 @@ export default function DoctorSchedule() {
     for (const day of DAYS_OF_WEEK) {
       if (
         schedule[day.key]?.isAvailable &&
-        schedule[day.key]?.slots.length === 0
+        (!schedule[day.key]?.slots || schedule[day.key]?.slots.length === 0)
       ) {
         toast.error(`Please add at least one time slot for ${day.label}`);
         return;
       }
 
       // Check for invalid time ranges
-      for (const slot of schedule[day.key].slots) {
-        if (slot.start >= slot.end) {
-          toast.error(
-            `Invalid time range for ${day.label}. Start time must be before end time.`
-          );
-          return;
+      if (schedule[day.key]?.slots) {
+        for (const slot of schedule[day.key].slots) {
+          if (slot.start >= slot.end) {
+            toast.error(
+              `Invalid time range for ${day.label}. Start time must be before end time.`
+            );
+            return;
+          }
         }
       }
     }
 
     try {
-      await updateSchedule({ schedule }).unwrap();
+      const result = await updateSchedule({ schedule }).unwrap();
+
+      console.log("Save Result:", result); // Debug log
+
+      // Handle response - check if data is wrapped in schedule key
+      if (result?.data) {
+        const savedSchedule = result.data.schedule || result.data;
+        setSchedule(savedSchedule);
+      }
+
       toast.success("Schedule updated successfully!");
       setHasChanges(false);
-      refetch();
     } catch (error) {
       toast.error("Failed to update schedule");
-      console.error(error);
+      console.error("Save Error:", error);
     }
   };
 
   const handleReset = () => {
-    if (data?.data && Object.keys(data.data).length > 0) {
-      setSchedule(data.data);
+    if (data?.data) {
+      const actualSchedule = data.data.schedule || data.data;
+
+      if (Object.keys(actualSchedule).length > 0) {
+        setSchedule(actualSchedule);
+      } else {
+        setSchedule(DEFAULT_SCHEDULE);
+      }
     } else {
       setSchedule(DEFAULT_SCHEDULE);
     }
@@ -154,7 +172,7 @@ export default function DoctorSchedule() {
   };
 
   const getTotalHours = (day) => {
-    if (!schedule[day]?.isAvailable) return 0;
+    if (!schedule[day]?.isAvailable || !schedule[day]?.slots) return 0;
 
     let total = 0;
     schedule[day].slots.forEach((slot) => {
@@ -239,7 +257,7 @@ export default function DoctorSchedule() {
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={schedule[day.key]?.isAvailable}
+                      checked={schedule[day.key]?.isAvailable || false}
                       onChange={() => handleDayToggle(day.key)}
                       className="sr-only peer"
                     />
@@ -271,7 +289,8 @@ export default function DoctorSchedule() {
               {/* Time Slots */}
               {schedule[day.key]?.isAvailable && (
                 <div className="space-y-3">
-                  {schedule[day.key].slots.length === 0 ? (
+                  {!schedule[day.key]?.slots ||
+                  schedule[day.key].slots.length === 0 ? (
                     <div className="text-center py-4 text-gray-500 bg-gray-50 rounded-lg">
                       No time slots added. Click "Add Slot" to get started.
                     </div>
@@ -286,7 +305,7 @@ export default function DoctorSchedule() {
                           <div className="flex items-center gap-2">
                             <input
                               type="time"
-                              value={slot.start}
+                              value={slot.start || "09:00"}
                               onChange={(e) =>
                                 handleSlotChange(
                                   day.key,
@@ -302,7 +321,7 @@ export default function DoctorSchedule() {
                             </span>
                             <input
                               type="time"
-                              value={slot.end}
+                              value={slot.end || "17:00"}
                               onChange={(e) =>
                                 handleSlotChange(
                                   day.key,
@@ -317,8 +336,8 @@ export default function DoctorSchedule() {
 
                           <div className="ml-auto text-sm text-gray-600 font-medium">
                             {(() => {
-                              const start = slot.start.split(":");
-                              const end = slot.end.split(":");
+                              const start = (slot.start || "09:00").split(":");
+                              const end = (slot.end || "17:00").split(":");
                               const startMinutes =
                                 parseInt(start[0]) * 60 + parseInt(start[1]);
                               const endMinutes =

@@ -16,6 +16,7 @@ import DoctorList from "../../Pages/DoctorList/DoctorList";
 import DoctorVerification from "../../Pages/DoctorVerification/DoctorVerification";
 import DoctorAppointment from "../../Pages/DoctorAppointment/DoctorAppointment";
 import DoctorSchedule from "../../Pages/DoctorSchedule/DoctorSchedule";
+import DentistSettingsPage from "../../Pages/DentistSettingsPage/DentistSettingsPage";
 import Patients from "../../Pages/PatientsList/Patients";
 const router = createBrowserRouter([
   {
@@ -125,7 +126,7 @@ const router = createBrowserRouter([
       },
       {
         path: "settings",
-        element: <h2>Settings page</h2>,
+        element: <DentistSettingsPage />,
       },
     ],
   },
