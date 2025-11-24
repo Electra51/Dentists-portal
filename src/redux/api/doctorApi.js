@@ -143,6 +143,29 @@ export const doctorApi = createApi({
       }),
       invalidatesTags: ["Settings"],
     }),
+
+    getAllDentists: builder.query({
+      query: ({
+        search = "",
+        specialization = "all",
+        department = "all",
+        sortBy = "rating",
+      } = {}) => {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        if (specialization !== "all")
+          params.append("specialization", specialization);
+        if (department !== "all") params.append("department", department);
+        if (sortBy) params.append("sortBy", sortBy);
+        return `/public/all?${params.toString()}`;
+      },
+      providesTags: ["PublicDentists"],
+    }),
+
+    getDentistDetails: builder.query({
+      query: (dentistId) => `/public/${dentistId}`,
+      providesTags: ["PublicDentists"],
+    }),
   }),
 });
 
@@ -163,4 +186,6 @@ export const {
   useUpdateDoctorProfileMutation,
   useGetDoctorSettingsQuery,
   useUpdateDoctorSettingsMutation,
+  useGetAllDentistsQuery,
+  useGetDentistDetailsQuery,
 } = doctorApi;

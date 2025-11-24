@@ -1,0 +1,78 @@
+// redux/api/appointmentApi.js
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+export const appointmentApi = createApi({
+  reducerPath: "appointmentApi",
+  baseQuery: fetchBaseQuery({
+    baseUrl: "http://localhost:5000/api/appointments",
+    prepareHeaders: (headers, { getState }) => {
+      const token = getState().auth.token; // Adjust based on your state
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ["Appointments"],
+  endpoints: (builder) => ({
+    // Get available slots
+    getAvailableSlots: builder.query({
+      query: ({ doctorId, date }) =>
+        `/available-slots?doctorId=${doctorId}&date=${date}`,
+    }),
+
+    // Create appointment
+    createAppointment: builder.mutation({
+      query: (appointmentData) => ({
+        url: "/create",
+        method: "POST",
+        body: appointmentData,
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // Get patient appointments
+    getPatientAppointments: builder.query({
+      query: (status) => (status ? `/patient?status=${status}` : "/patient"),
+      providesTags: ["Appointments"],
+    }),
+
+    // Get doctor appointments
+    getDoctorAppointments: builder.query({
+      query: ({ status, date }) => {
+        let url = "/doctor";
+        const params = [];
+        if (status) params.push(`status=${status}`);
+        if (date) params.push(`date=${date}`);
+        if (params.length) url += `?${params.join("&")}`;
+        return url;
+      },
+      providesTags: ["Appointments"],
+    }),
+
+    // Get appointment details
+    getAppointmentDetails: builder.query({
+      query: (appointmentId) => `/${appointmentId}`,
+      providesTags: ["Appointments"],
+    }),
+
+    // Update appointment status
+    updateAppointmentStatus: builder.mutation({
+      query: ({ appointmentId, ...data }) => ({
+        url: `/${appointmentId}/status`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+  }),
+});
+
+export const {
+  useGetAvailableSlotsQuery,
+  useCreateAppointmentMutation,
+  useGetPatientAppointmentsQuery,
+  useGetDoctorAppointmentsQuery,
+  useGetAppointmentDetailsQuery,
+  useUpdateAppointmentStatusMutation,
+} = appointmentApi;

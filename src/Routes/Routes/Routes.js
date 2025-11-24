@@ -20,6 +20,8 @@ import DentistSettingsPage from "../../Pages/DoctorDashboardPage/DentistSettings
 import DoctorSchedule from "../../Pages/DoctorDashboardPage/DoctorSchedule";
 import DoctorAppointment from "../../Pages/DoctorDashboardPage/DoctorAppointment";
 import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
+import DentistDetailsPage from "../../Pages/DentistsMenuPage/DentistDetailsPage";
+import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBookingPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -37,6 +39,14 @@ const router = createBrowserRouter([
       {
         path: "/doctors",
         element: <DentistsPage />,
+      },
+      {
+        path: "/doctors/:dentistId",
+        element: <DentistDetailsPage />,
+      },
+      {
+        path: "/appointment/book/:dentistId",
+        element: <AppointmentBookingPage />,
       },
       {
         path: "/about",

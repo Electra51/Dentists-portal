@@ -12,26 +12,19 @@ import {
   Target,
   Lamp,
 } from "lucide-react";
-import appointmentBg from "../../assets/images/appointment.png";
 import PrimaryButton from "../../Components/PrimaryButton";
 import { Link } from "react-router-dom";
+import PageHeader from "../../Components/PageHeader";
 
 const About = () => {
   return (
     <div className="min-h-screen ">
-      <div
-        className="bg-gradient-to-r from-teal-600 to-teal-500 text-white py-24 px-4 mt-20"
-        style={{ background: `url(${appointmentBg})` }}>
-        <div className="max-w-7xl mx-auto px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
-            About Our Dental Care
-          </h1>
-          <p className="text-lg text-teal-100 max-w-3xl">
-            Your smile is our priority. We provide high-quality dental care with
-            modern technology, skilled doctors, and a comfortable environment.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title={"About Our Dental Care"}
+        description={
+          "Your smile is our priority. We provide high-quality dental care with modern technology, skilled doctors, and a comfortable environment."
+        }
+      />
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
