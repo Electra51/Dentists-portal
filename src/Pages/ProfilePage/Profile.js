@@ -14,17 +14,17 @@ import {
   Shield,
   X,
   Loader2,
-  CheckCircle, // নতুন
-  XCircle, // নতুন
-  AlertCircle, // নতুন
-  Send, // নতুন
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Send,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useUploadUserImageMutation,
-  useRequestVerificationMutation, // নতুন import
+  useRequestVerificationMutation,
 } from "../../redux/api/authApi";
 import InfoItem from "./InfoItem";
 import SelectField from "../../Components/SelectField";
@@ -48,7 +48,6 @@ export default function Profile() {
   const [uploadImage, { isLoading: isUploadingImage }] =
     useUploadUserImageMutation();
 
-  // নতুন mutation hook
   const [requestVerification, { isLoading: isRequestingVerification }] =
     useRequestVerificationMutation();
 
@@ -115,9 +114,7 @@ export default function Profile() {
     }
   };
 
-  // নতুন function - Verification Request
   const handleRequestVerification = async () => {
-    // Check if profile is complete
     if (
       !currentUser.specialization ||
       !currentUser.bmdcNumber ||
@@ -132,7 +129,7 @@ export default function Profile() {
     try {
       const res = await requestVerification().unwrap();
       toast.success(res.message || "Verification request sent successfully!");
-      refetch(); // Refresh profile data
+      refetch();
     } catch (error) {
       console.error(error);
       toast.error(
@@ -174,7 +171,6 @@ export default function Profile() {
   };
   console.log("currentUser", currentUser);
 
-  // Verification status component helper
   const getVerificationBadge = () => {
     const status = currentUser.verificationStatus;
 
@@ -246,7 +242,6 @@ export default function Profile() {
                   }`}>
                   {userType.toUpperCase()}
                 </span>
-                {/* Verification Badge - শুধু Dentist দের জন্য */}
                 {userType === "dentist" && getVerificationBadge()}
               </div>
               <div className="flex flex-col gap-2 text-gray-600">
@@ -296,7 +291,7 @@ export default function Profile() {
                 />
 
                 <InfoItem
-                  label="Date of Birth"
+                  label="Age"
                   value={`${calculateAge(currentUser.dateOfBirth)} years`}
                 />
                 <InfoItem

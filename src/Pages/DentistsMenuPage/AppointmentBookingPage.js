@@ -18,10 +18,14 @@ import {
 import { useCreateAppointmentMutation } from "../../redux/api/appointmentApi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useGetDentistDetailsQuery } from "../../redux/api/doctorApi";
+import PageHeader from "../../Components/PageHeader";
+import { useGetUserProfileQuery } from "../../redux/api/authApi";
 
 const AppointmentBookingPage = () => {
   const { dentistId } = useParams();
   const navigate = useNavigate();
+  const { data: profileData } = useGetUserProfileQuery();
+  const currentUser = profileData?.user;
 
   const { data: dentistData } = useGetDentistDetailsQuery(dentistId);
 
@@ -36,9 +40,19 @@ const AppointmentBookingPage = () => {
     reason: "",
   });
 
+  React.useEffect(() => {
+    if (currentUser) {
+      setPatientInfo((prev) => ({
+        ...prev,
+        name: currentUser.name || "",
+        phone: currentUser.phone || "",
+        email: currentUser.email || "",
+      }));
+    }
+  }, [currentUser]);
+
   const [createAppointment, { isLoading: bookingLoading }] =
     useCreateAppointmentMutation();
-  console.log("dentistData", dentistData);
 
   const dentist = dentistData.data?.dentist;
   const avgRating = dentistData.data.avgRating || "0.0";
@@ -47,6 +61,27 @@ const AppointmentBookingPage = () => {
   if (selectedService === "" && dentist.services?.length > 0) {
     setSelectedService(dentist.services[0]);
   }
+
+  const isProfileComplete = () => {
+    if (!currentUser) return false;
+
+    const requiredFields = [
+      "allergies",
+      "chronicConditions",
+      "currentMedications",
+      "dateOfBirth",
+      "bloodGroup",
+    ];
+
+    return requiredFields.every((field) => {
+      const value = currentUser[field];
+
+      if (Array.isArray(value)) {
+        return value.length > 0;
+      }
+      return value && value.toString().trim() !== "";
+    });
+  };
 
   const convertTo24Hour = (time12) => {
     const [time, period] = time12.split(" ");
@@ -60,6 +95,19 @@ const AppointmentBookingPage = () => {
   };
 
   const handleConfirmAppointment = async () => {
+    if (!currentUser) {
+      alert("Please login first");
+      return;
+    }
+
+    if (!isProfileComplete()) {
+      alert(
+        "Please complete your profile first. Fill in: Allergies, Chronic Conditions, Current Medications, Date of Birth, and Blood Group"
+      );
+      navigate("/profile");
+      return;
+    }
+
     if (
       !selectedDate ||
       !selectedTime ||
@@ -217,10 +265,16 @@ const AppointmentBookingPage = () => {
   const isFormValid =
     selectedDate && selectedTime && patientInfo.name && patientInfo.phone;
 
+  const profileComplete = isProfileComplete();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 mt-20">
+        <PageHeader
+          title={"Book Your Appointment"}
+          description={"Choose a convenient date and time for your dental care"}
+        />
+        <div className="max-w-7xl mx-auto px-4 py-4 mt-0">
           <button
             onClick={() => window.history.back()}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -231,6 +285,27 @@ const AppointmentBookingPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {!profileComplete && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="font-semibold text-red-800 mb-1">
+                Profile Incomplete
+              </h3>
+              <p className="text-sm text-red-700 mb-3">
+                Please complete your profile before booking an appointment.
+                Required information: Allergies, Chronic Conditions, Current
+                Medications, Date of Birth, and Blood Group.
+              </p>
+              <button
+                onClick={() => navigate("/dashboard/profile")}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                Complete Profile Now
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
           <div className="flex items-center gap-4 mb-4">
             <img
@@ -266,7 +341,7 @@ const AppointmentBookingPage = () => {
             <div className="text-center bg-cyan-50 px-6 py-4 rounded-lg">
               <p className="text-sm text-gray-600">Consultation Fee</p>
               <p className="text-3xl font-bold text-cyan-600">
-                ৳{dentist.settings?.consultationFee || "500"}
+                ৳ {dentist.settings?.consultationFee || "500"}
               </p>
             </div>
           </div>
@@ -547,17 +622,17 @@ const AppointmentBookingPage = () => {
                     Consultation Fee
                   </span>
                   <span className="font-bold text-cyan-600 text-2xl">
-                    ৳{dentist.settings?.consultationFee || "500"}
+                    ৳ {dentist.settings?.consultationFee || "500"}
                   </span>
                 </div>
               </div>
 
               <button
                 onClick={handleConfirmAppointment}
-                disabled={!isFormValid || bookingLoading}
+                disabled={!isFormValid || bookingLoading || !profileComplete}
                 className={`w-full py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                  isFormValid && !bookingLoading
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:shadow-lg"
+                  isFormValid && !bookingLoading && profileComplete
+                    ? "bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 hover:shadow-lg"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}>
                 {bookingLoading ? (
@@ -565,6 +640,8 @@ const AppointmentBookingPage = () => {
                     <Loader2 className="w-5 h-5 animate-spin" />
                     Booking...
                   </>
+                ) : !profileComplete ? (
+                  "Complete Profile First"
                 ) : isFormValid ? (
                   "Confirm Appointment"
                 ) : (
