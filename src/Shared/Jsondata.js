@@ -165,7 +165,7 @@ export const serviceData = [
 export const dentistMenuItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "/dashboard/appointments", label: "Appointments", icon: Calendar },
-  { path: "/dashboard/patients", label: "Patients", icon: Users },
+  { path: "/dashboard/my-patients", label: "Patients List", icon: Users },
   { path: "/dashboard/prescriptions", label: "Prescriptions", icon: FileText },
   { path: "/dashboard/schedule", label: "Schedule", icon: Clock },
   { path: "/dashboard/reviews", label: "Reviews", icon: Star },

@@ -125,7 +125,7 @@ const AppointmentBookingContent = ({
           <p><strong>Doctor:</strong> Dr. ${dentist.name}</p>
           <p><strong>Date:</strong> ${formatDate(selectedDate)}</p>
           <p><strong>Time:</strong> ${selectedTime}</p>
-          <p><strong>Fee:</strong> ৳${dentist.settings.consultationFee}</p>
+          <p><strong>Fee:</strong> $ ${dentist.settings.consultationFee}</p>
           <p class="text-yellow-600 mt-2">💰 Pay cash at clinic after consultation</p>
         </div>
       `,
@@ -345,7 +345,7 @@ const AppointmentBookingContent = ({
             <div className="text-center bg-cyan-50 px-6 py-4 rounded-lg">
               <p className="text-sm text-gray-600">Consultation Fee</p>
               <p className="text-3xl font-bold text-cyan-600">
-                ৳ {dentist?.settings?.consultationFee || "500"}
+                $ {dentist?.settings?.consultationFee || "500"}
               </p>
             </div>
           </div>
@@ -626,7 +626,7 @@ const AppointmentBookingContent = ({
                     Consultation Fee
                   </span>
                   <span className="font-bold text-cyan-600 text-2xl">
-                    ৳ {dentist?.settings?.consultationFee || "500"}
+                    $ {dentist?.settings?.consultationFee || "500"}
                   </span>
                 </div>
               </div>

@@ -3,7 +3,6 @@ import Main from "../../Layout/Main";
 import ContactUs from "../../Pages/ContactUs/ContactUs";
 import Dashboard from "../../Pages/Dashboard/Dashboard";
 import ErrorPage from "../../Pages/ErrorPage/ErrorPage";
-
 import Login from "../../Pages/Login/Login";
 import Signup from "../../Pages/Login/Signup";
 import Reviews from "../../Pages/Reviews/Reviews";
@@ -23,6 +22,7 @@ import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
 import DentistDetailsPage from "../../Pages/DentistsMenuPage/DentistDetailsPage";
 import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBookingPage";
 import MyAppointmentPage from "../../Pages/PatientsDashboardPage/MyAppointmentPage";
+import DentistsPatientsPage from "../../Pages/DoctorDashboardPage/DentistsPatientsPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -104,6 +104,10 @@ const router = createBrowserRouter([
       {
         path: "patients",
         element: <Patients />,
+      },
+      {
+        path: "my-patients",
+        element: <DentistsPatientsPage />,
       },
 
       {

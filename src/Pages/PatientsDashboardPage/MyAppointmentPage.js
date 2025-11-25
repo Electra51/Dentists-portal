@@ -245,7 +245,7 @@ const MyAppointmentPage = () => {
                         Consultation Fee
                       </p>
                       <p className="text-sm font-semibold text-gray-800">
-                        ৳ {appointment.payment?.consultationFee || "0"}{" "}
+                        $ {appointment.payment?.consultationFee || "0"}{" "}
                         <span className="text-xs text-gray-500">
                           (Pay at clinic)
                         </span>

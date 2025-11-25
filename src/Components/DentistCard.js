@@ -90,7 +90,7 @@ const DentistCard = ({ dentist, onViewDetails }) => {
               Consultation Fee
             </span>
             <span className="text-lg font-bold text-green-600">
-              ৳{settings.consultationFee}
+              $ {settings.consultationFee}
             </span>
           </div>
         )}

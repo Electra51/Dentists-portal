@@ -125,7 +125,7 @@ const DentistDetailsPage = () => {
                 Consultation Fee
               </p>
               <p className="text-3xl font-bold">
-                ৳ {dentist.settings.consultationFee}
+                $ {dentist.settings.consultationFee}
               </p>
               <button
                 className="mt-4 bg-white text-cyan-600 px-6 py-2 rounded-lg font-semibold hover:bg-cyan-50 transition-colors flex items-center gap-2 mx-auto"
