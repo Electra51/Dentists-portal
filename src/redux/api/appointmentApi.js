@@ -3,10 +3,11 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const appointmentApi = createApi({
   reducerPath: "appointmentApi",
+
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api/appointments",
-    prepareHeaders: (headers, { getState }) => {
-      const token = getState().auth.token; // Adjust based on your state
+    baseUrl: "http://localhost:8080/api/v1/appointments",
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem("token");
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
