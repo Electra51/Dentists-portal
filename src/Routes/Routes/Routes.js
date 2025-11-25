@@ -23,6 +23,7 @@ import DentistDetailsPage from "../../Pages/DentistsMenuPage/DentistDetailsPage"
 import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBookingPage";
 import MyAppointmentPage from "../../Pages/PatientsDashboardPage/MyAppointmentPage";
 import DentistsPatientsPage from "../../Pages/DoctorDashboardPage/DentistsPatientsPage";
+import AllPrescriptionListDoctor from "../../Pages/DoctorDashboardPage/AllPrescriptionListDoctor";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -116,7 +117,7 @@ const router = createBrowserRouter([
       },
       {
         path: "prescriptions",
-        element: <h2>prescriptions page</h2>,
+        element: <AllPrescriptionListDoctor />,
       },
       {
         path: "schedule",
