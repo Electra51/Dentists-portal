@@ -7,16 +7,15 @@ import {
   User,
   FileText,
   Activity,
+  LayoutDashboard,
 } from "lucide-react";
 import { useGetPatientAppointmentsQuery } from "../../redux/api/appointmentApi";
 
 const PatientDashboard = () => {
-  // Fetch all appointments
   const { data: appointmentsData, isLoading } =
     useGetPatientAppointmentsQuery();
   const appointments = appointmentsData?.data || [];
 
-  // Calculate statistics
   const totalAppointments = appointments.length;
   const scheduledAppointments = appointments.filter(
     (apt) => apt.status?.toLowerCase() === "scheduled"
@@ -52,14 +51,15 @@ const PatientDashboard = () => {
 
   return (
     <div className="min-h-screen max-w-7xl mx-auto p-4 md:p-6">
-      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
+          <LayoutDashboard className="w-8 h-8 text-[#5ecdc9]" />
+          My Dashboard
+        </h1>
         <p className="text-gray-600">
           Welcome back! Here's your appointment overview
         </p>
       </div>
-
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Total Appointments */}
@@ -112,7 +112,6 @@ const PatientDashboard = () => {
           <p className="text-xs text-red-200">Cancelled bookings</p>
         </div>
       </div>
-
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Upcoming Appointments */}
@@ -238,7 +237,6 @@ const PatientDashboard = () => {
           )}
         </div>
       </div>
-
       {/* Quick Actions */}
       <div className="mt-8 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -265,7 +263,6 @@ const PatientDashboard = () => {
           </button>
         </div>
       </div>
-
       {/* Important Note */}
       <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
         <div className="flex items-start gap-3">

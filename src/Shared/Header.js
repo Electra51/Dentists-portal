@@ -80,7 +80,7 @@ const NavItems = React.memo(({ user, pathname, handleLogOut, token }) => {
               </Link>
 
               <Link
-                to="/profile"
+                to="dashboard/profile"
                 className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50"
                 onClick={() => setOpen(false)}>
                 <UserIcon size={18} />
