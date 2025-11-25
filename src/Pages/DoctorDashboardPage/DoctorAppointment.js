@@ -30,6 +30,8 @@ import {
 import toast from "react-hot-toast";
 import { Modal } from "../../Components/Modal";
 import PrescriptionForm from "./PrescriptionForm";
+import { useMarkPaymentReceivedMutation } from "../../redux/api/appointmentApi";
+import PaymentModal from "./PaymentModal";
 
 export default function DoctorAppointment() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -39,6 +41,12 @@ export default function DoctorAppointment() {
   const [paymentFilter, setPaymentFilter] = useState("all");
   const [expandedAppointment, setExpandedAppointment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // ✅ Payment Modal State
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedPaymentAppointment, setSelectedPaymentAppointment] =
+    useState(null);
+
   const { data, isLoading, refetch } = useGetDoctorAppointmentsQuery({
     date: selectedDate,
     status: statusFilter === "all" ? "" : statusFilter,
@@ -47,15 +55,47 @@ export default function DoctorAppointment() {
 
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
-
+  // ✅ Payment Mutation
+  const [markPayment, { isLoading: isMarkingPayment }] =
+    useMarkPaymentReceivedMutation();
   const appointments = data?.data || [];
+  // ✅ Handle Payment Modal Open
+  const handleOpenPaymentModal = (appointment) => {
+    setSelectedPaymentAppointment(appointment);
+    setIsPaymentModalOpen(true);
+  };
 
-  const [prescriptions, setPrescriptions] = useState([]);
+  // ✅ Handle Payment Update
+  const handleMarkAsPaid = async (appointmentId, amount, note) => {
+    try {
+      await markPayment({ appointmentId, amount, note }).unwrap();
+      toast.success("Payment marked as received!");
+      setIsPaymentModalOpen(false);
+      setSelectedPaymentAppointment(null);
+      refetch();
+    } catch (error) {
+      console.error("Payment update error:", error);
+      toast.error(error?.data?.message || "Failed to update payment");
+    }
+  };
 
-  const handleAddPrescription = (data) => {
-    setPrescriptions([...prescriptions, { ...data, id: Date.now() }]);
+  // ✅ Handle Prescription Success - Refetch appointments if needed
+  const handlePrescriptionSuccess = (prescriptionData) => {
+    console.log("Prescription created:", prescriptionData);
+    // Optionally refetch appointments or update UI
+    toast.success("Prescription created successfully!");
+  };
+
+  // ✅ Handle Open Prescription Modal
+  const handleOpenPrescriptionModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsModalOpen(true);
+  };
+
+  // ✅ Handle Close Modal
+  const handleCloseModal = () => {
     setIsModalOpen(false);
-    alert("Prescription added successfully!");
+    setSelectedAppointment(null);
   };
 
   // Statistics calculation
@@ -502,17 +542,6 @@ export default function DoctorAppointment() {
                           )}
                         </div>
                       )}
-
-                      {/* Expand/Collapse Button */}
-                      <button
-                        onClick={() =>
-                          setExpandedAppointment(
-                            expandedAppointment === appointment._id
-                              ? null
-                              : appointment._id
-                          )
-                        }
-                        className="mt-3 text-cyan-600 hover:text-cyan-700 text-sm font-medium flex items-center gap-1"></button>
                     </div>
                   </div>
 
@@ -574,15 +603,26 @@ export default function DoctorAppointment() {
                       </button>
                     )}
 
-                    <button
-                      className="px-4 py-2 bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 shadow-md transition-all flex items-center gap-2 rounded-lg"
-                      onClick={() => {
-                        setSelectedAppointment(appointment);
-                        setIsModalOpen(true);
-                      }}>
-                      <Plus className="w-4 h-4" />
-                      Prescription
-                    </button>
+                    {/* ✅ Prescription Button - Show for confirmed/completed */}
+                    {(appointment.status === "confirmed" ||
+                      appointment.status === "completed") && (
+                      <button
+                        onClick={() => handleOpenPrescriptionModal(appointment)}
+                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center gap-2 shadow-sm">
+                        <Plus className="w-4 h-4" />
+                        Prescription
+                      </button>
+                    )}
+                    {/* ✅ Mark as Paid Button - Only if payment is pending */}
+                    {appointment.payment.paymentStatus === "pending" && (
+                      <button
+                        onClick={() => handleOpenPaymentModal(appointment)}
+                        disabled={isMarkingPayment}
+                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
+                        <DollarSign className="w-4 h-4" />
+                        Mark as Paid
+                      </button>
+                    )}
                     <button className="px-4 py-2 rounded-md border border-blue-300 transition-all flex items-center gap-2 shadow-sm">
                       <span className="font-medium">Payment Status:</span>
                       {getPaymentBadge(
@@ -598,16 +638,32 @@ export default function DoctorAppointment() {
         )}
       </div>
 
+      {/* ✅ Prescription Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Add New Prescription">
+        onClose={handleCloseModal}
+        title="Create Prescription">
         <PrescriptionForm
-          patientData={selectedAppointment} // ← Ei line important!
-          onSubmit={handleAddPrescription}
-          onCancel={() => setIsModalOpen(false)}
+          patientData={selectedAppointment}
+          onCancel={handleCloseModal}
+          onSuccess={handlePrescriptionSuccess}
         />
       </Modal>
+
+      {/* Payment Modal */}
+      {isPaymentModalOpen && (
+        <PaymentModal
+          appointment={selectedPaymentAppointment}
+          isOpen={isPaymentModalOpen}
+          onClose={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedPaymentAppointment(null);
+          }}
+          onConfirm={(appointmentId, amount, note) =>
+            handleMarkAsPaid(appointmentId, amount, note)
+          }
+        />
+      )}
     </div>
   );
 }

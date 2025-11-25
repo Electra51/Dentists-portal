@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Calendar, User, FileText } from "lucide-react";
+import { Plus, Trash2, Calendar, User, FileText, Loader2 } from "lucide-react";
+import { useCreatePrescriptionMutation } from "../../redux/api/prescriptionApi";
+import toast from "react-hot-toast";
 
-const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
+const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
   const [formData, setFormData] = useState({
     patientName: "",
     patientId: "",
@@ -18,7 +20,11 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
     ],
     generalInstructions: "",
     nextVisit: "",
+    diagnosis: "",
   });
+
+  // ✅ Redux API Hook
+  const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
 
   // Auto-fill patient data when component mounts or patientData changes
   useEffect(() => {
@@ -75,18 +81,69 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
     });
   };
 
-  const handleSubmit = () => {
-    // Validate: at least one medicine should be filled
-    const hasValidMedicine = formData.medicines.some(
-      (med) => med.medicineName && med.dosage && med.frequency && med.duration
-    );
+  // ✅ Handle Submit with API Call
+  const handleSubmit = async () => {
+    try {
+      // Validate: at least one medicine should be filled
+      const validMedicines = formData.medicines.filter(
+        (med) => med.medicineName && med.dosage && med.frequency && med.duration
+      );
 
-    if (!hasValidMedicine) {
-      alert("Please fill in at least one complete medicine entry");
-      return;
+      if (validMedicines.length === 0) {
+        toast.error("Please fill in at least one complete medicine entry");
+        return;
+      }
+
+      // Prepare data for API (remove 'id' field from medicines)
+      const prescriptionData = {
+        patientId: formData.patientId,
+        patientName: formData.patientName,
+        appointmentId: formData.appointmentId,
+        medicines: validMedicines.map(({ id, ...rest }) => rest), // Remove 'id' field
+        generalInstructions: formData.generalInstructions || "",
+        nextVisit: formData.nextVisit || null,
+        diagnosis: formData.diagnosis || "",
+      };
+
+      // ✅ Call API
+      const response = await createPrescription(prescriptionData).unwrap();
+
+      // Success
+      toast.success("Prescription created successfully!");
+
+      // Reset form
+      setFormData({
+        patientName: "",
+        patientId: "",
+        appointmentId: "",
+        medicines: [
+          {
+            id: Date.now(),
+            medicineName: "",
+            dosage: "",
+            frequency: "",
+            duration: "",
+            instructions: "",
+          },
+        ],
+        generalInstructions: "",
+        nextVisit: "",
+        diagnosis: "",
+      });
+
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess(response.data);
+      }
+
+      // Close modal/form
+      if (onCancel) {
+        onCancel();
+      }
+    } catch (error) {
+      console.error("Create prescription error:", error);
+      toast.error(error?.data?.message || "Failed to create prescription");
     }
-
-    onSubmit(formData);
   };
 
   return (
@@ -117,6 +174,20 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
         </div>
       </div>
 
+      {/* Diagnosis Section (Optional) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Diagnosis (Optional)
+        </label>
+        <textarea
+          value={formData.diagnosis}
+          onChange={(e) => handleGeneralChange("diagnosis", e.target.value)}
+          rows="2"
+          placeholder="Brief diagnosis or chief complaint..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none text-sm"
+        />
+      </div>
+
       {/* Medicines Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -127,7 +198,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
           <button
             type="button"
             onClick={handleAddMedicine}
-            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all flex items-center gap-1.5 text-sm font-medium">
+            disabled={isLoading}
+            className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-all flex items-center gap-1.5 text-sm font-medium disabled:opacity-50">
             <Plus className="w-4 h-4" />
             Add Medicine
           </button>
@@ -145,7 +217,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                 <button
                   type="button"
                   onClick={() => handleRemoveMedicine(medicine.id)}
-                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                  disabled={isLoading}
+                  className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-all disabled:opacity-50">
                   <Trash2 className="w-4 h-4" />
                 </button>
               )}
@@ -166,7 +239,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                   )
                 }
                 placeholder="e.g., Amoxicillin"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm"
+                disabled={isLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm disabled:bg-gray-100"
               />
             </div>
 
@@ -182,7 +256,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                     handleMedicineChange(medicine.id, "dosage", e.target.value)
                   }
                   placeholder="500mg"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm"
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm disabled:bg-gray-100"
                 />
               </div>
 
@@ -199,7 +274,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                       e.target.value
                     )
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm">
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm disabled:bg-gray-100">
                   <option value="">Select</option>
                   <option value="Once daily">Once daily</option>
                   <option value="Twice daily">Twice daily</option>
@@ -229,7 +305,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                     )
                   }
                   placeholder="7 days"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm"
+                  disabled={isLoading}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm disabled:bg-gray-100"
                 />
               </div>
             </div>
@@ -249,7 +326,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
                 }
                 rows="2"
                 placeholder="Take with food, avoid alcohol, etc..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none text-sm"
+                disabled={isLoading}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none text-sm disabled:bg-gray-100"
               />
             </div>
           </div>
@@ -268,13 +346,14 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
           }
           rows="3"
           placeholder="General advice for the patient: rest, diet recommendations, precautions, etc..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none text-sm"
+          disabled={isLoading}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none text-sm disabled:bg-gray-100"
         />
       </div>
 
       {/* Next Visit Date */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1 items-center gap-2">
+        <label className="flex text-sm font-medium text-gray-700 mb-1 items-center gap-2">
           <Calendar className="w-4 h-4" />
           Next Visit Date (Optional)
         </label>
@@ -283,7 +362,8 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
           value={formData.nextVisit}
           onChange={(e) => handleGeneralChange("nextVisit", e.target.value)}
           min={new Date().toISOString().split("T")[0]}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+          disabled={isLoading}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all disabled:bg-gray-100"
         />
       </div>
 
@@ -292,13 +372,22 @@ const PrescriptionForm = ({ onSubmit, onCancel, patientData }) => {
         <button
           type="button"
           onClick={handleSubmit}
-          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm font-medium">
-          Create Prescription
+          disabled={isLoading}
+          className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Prescription"
+          )}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium">
+          disabled={isLoading}
+          className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed">
           Cancel
         </button>
       </div>

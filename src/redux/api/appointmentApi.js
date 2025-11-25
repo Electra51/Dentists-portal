@@ -66,6 +66,15 @@ export const appointmentApi = createApi({
       }),
       invalidatesTags: ["Appointments"],
     }),
+    // ✅ NEW: Mark payment as received (Doctor only)
+    markPaymentReceived: builder.mutation({
+      query: ({ appointmentId, amount, note }) => ({
+        url: `/${appointmentId}/mark-paid`,
+        method: "PATCH",
+        body: { amount, note },
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
   }),
 });
 
@@ -76,4 +85,5 @@ export const {
   useGetDoctorAppointmentsQuery,
   useGetAppointmentDetailsQuery,
   useUpdateAppointmentStatusMutation,
+  useMarkPaymentReceivedMutation,
 } = appointmentApi;
