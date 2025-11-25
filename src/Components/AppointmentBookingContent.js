@@ -134,7 +134,7 @@ const AppointmentBookingContent = ({
 
       // Redirect after 2 seconds
       setTimeout(() => {
-        navigate("/dashboard/appointments");
+        navigate("/dashboard/my-appointments");
       }, 2000);
     } catch (error) {
       Swal.fire({

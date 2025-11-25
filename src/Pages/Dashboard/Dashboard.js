@@ -2,6 +2,7 @@ import React from "react";
 import { useGetUserProfileQuery } from "../../redux/api/authApi";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PatientDashboard from "../PatientsDashboardPage/PatientDashboard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const Dashboard = () => {
       ) : (
         ""
       )}
-      hello Dashboard
+      <PatientDashboard />
     </div>
   );
 };

@@ -22,6 +22,7 @@ import DoctorAppointment from "../../Pages/DoctorDashboardPage/DoctorAppointment
 import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
 import DentistDetailsPage from "../../Pages/DentistsMenuPage/DentistDetailsPage";
 import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBookingPage";
+import MyAppointmentPage from "../../Pages/PatientsDashboardPage/MyAppointmentPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -93,12 +94,9 @@ const router = createBrowserRouter([
       },
       {
         path: "my-appointments",
-        element: <h2>My Appointments</h2>,
+        element: <MyAppointmentPage />,
       },
-      {
-        path: "records",
-        element: <h2>Medical Records</h2>,
-      },
+
       {
         path: "doctor-verification",
         element: <DoctorVerification />,

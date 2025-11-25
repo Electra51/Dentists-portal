@@ -12,7 +12,6 @@ import {
   CreditCard,
   Settings,
   UserCircle,
-  FolderOpen,
   UserCheck,
 } from "lucide-react";
 
@@ -178,9 +177,6 @@ export const dentistMenuItems = [
 export const patientMenuItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "my-appointments", label: "My Appointments", icon: Calendar },
-  { path: "records", label: "Medical Records", icon: FolderOpen },
-  { path: "prescriptions", label: "Prescriptions", icon: FileText },
-  { path: "payments", label: "Payments & Bills", icon: CreditCard },
   { path: "profile", label: "My Profile", icon: UserCircle },
 ];
 

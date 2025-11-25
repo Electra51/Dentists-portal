@@ -16,13 +16,13 @@ export const appointmentApi = createApi({
   }),
   tagTypes: ["Appointments"],
   endpoints: (builder) => ({
-    // Get available slots
+    // get available slots for landing page
     getAvailableSlots: builder.query({
       query: ({ doctorId, date }) =>
         `/available-slots?doctorId=${doctorId}&date=${date}`,
     }),
 
-    // Create appointment
+    // create appointment by patients
     createAppointment: builder.mutation({
       query: (appointmentData) => ({
         url: "/create",
@@ -32,7 +32,7 @@ export const appointmentApi = createApi({
       invalidatesTags: ["Appointments"],
     }),
 
-    // Get patient appointments
+    // get patient appointments
     getPatientAppointments: builder.query({
       query: (status) => (status ? `/patient?status=${status}` : "/patient"),
       providesTags: ["Appointments"],
