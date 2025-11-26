@@ -25,12 +25,12 @@ import {
   useUpdateUserProfileMutation,
   useUploadUserImageMutation,
   useRequestVerificationMutation,
-} from "../../redux/api/authApi";
+} from "../../../redux/api/authApi";
 import InfoItem from "./InfoItem";
-import SelectField from "../../Components/SelectField";
-import InputField from "../../Components/InputField";
-import ProfileModal from "../../Components/ProfileModal";
-import PrimaryButton from "../../Components/PrimaryButton";
+import PrimaryButton from "../../../Components/PrimaryButton";
+import InputField from "../../../Components/InputField";
+import SelectField from "../../../Components/SelectField";
+import ProfileModal from "../../../Components/ProfileModal";
 
 export default function Profile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -213,7 +213,7 @@ export default function Profile() {
 
   return (
     <div className="">
-      <div className="max-w-7xl mx-auto mt-7">
+      <div className="max-w-[1440px] mx-auto mt-7">
         <div className="bg-white rounded-xl shadow-sm p-8 mb-6">
           <div className="flex items-start gap-6">
             <div className="w-32 h-32 bg-gradient-to-r from-secondary to-info hover:opacity-90 rounded-full flex items-center justify-center text-white text-4xl font-bold shadow-lg overflow-hidden">

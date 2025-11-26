@@ -9,11 +9,13 @@ import {
   Building2,
   IdCard,
   CalendarCheck,
+  Check,
 } from "lucide-react";
-import { useGetPatientAppointmentsQuery } from "../../redux/api/appointmentApi";
-import { useUpdateAppointmentStatusMutation } from "../../redux/api/appointmentApi";
-import PrimaryButton from "../../Components/PrimaryButton";
 import { Link } from "react-router-dom";
+import { useGetPatientAppointmentsQuery } from "../../../redux/api/appointmentApi";
+import { useUpdateAppointmentStatusMutation } from "../../../redux/api/doctorApi";
+import PrimaryButton from "../../../Components/PrimaryButton";
+import DashboardHeader from "../../../Components/DashboardHeader";
 
 const MyAppointmentPage = () => {
   const [setSelectedAppointment] = useState(null);
@@ -73,14 +75,16 @@ const MyAppointmentPage = () => {
   };
 
   const getPaymentStatusColor = (status) => {
-    switch (status?.toUpperCase()) {
-      case "PAID":
+    console.log("stst", status);
+
+    switch (status) {
+      case "paid":
         return "bg-green-100 text-green-700 border-green-200";
-      case "PENDING":
+      case "pending":
         return "bg-yellow-100 text-yellow-700 border-yellow-200";
-      case "REFUNDED":
+      case "refunded":
         return "bg-purple-100 text-purple-700 border-purple-200";
-      case "FAILED":
+      case "failed":
         return "bg-red-100 text-red-700 border-red-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
@@ -120,16 +124,12 @@ const MyAppointmentPage = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto p-4 md:p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-          <CalendarCheck className="w-8 h-8 text-[#5ecdc9]" />
-          My Appointments
-        </h1>
-        <p className="text-gray-600">
-          View and manage all your dental appointments
-        </p>
-      </div>
+    <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
+      <DashboardHeader
+        icon={CalendarCheck}
+        title="My Appointments"
+        subtitle="View and manage all your dental appointments"
+      />
 
       {/* Loading State */}
       {isLoading && (
@@ -276,34 +276,45 @@ const MyAppointmentPage = () => {
                   className="mb-4 p-3 rounded-lg border-2 border-dashed flex items-center justify-between"
                   style={{
                     borderColor:
-                      appointment.paymentStatus === "PAID"
+                      appointment?.payment?.paymentStatus === "paid"
                         ? "#10b981"
                         : "#eab308",
                     backgroundColor:
-                      appointment.paymentStatus === "PAID"
+                      appointment?.payment?.paymentStatus === "paid"
                         ? "#f0fdf4"
                         : "#fefce8",
                   }}>
                   <div className="flex items-center gap-2">
                     <span className="text-lg">
-                      {appointment.paymentStatus === "PAID" ? "💳" : "⏳"}
+                      {appointment?.payment?.paymentStatus === "paid"
+                        ? "💳"
+                        : "⏳"}
                     </span>
                     <span
                       className="text-sm font-semibold"
                       style={{
                         color:
-                          appointment.paymentStatus === "PAID"
+                          appointment?.payment?.paymentStatus === "paid"
                             ? "#166534"
                             : "#854d0e",
                       }}>
                       Payment Status:
                     </span>
                   </div>
-                  <span
+                  {/* <span
                     className={`px-3 py-1 rounded-lg text-xs font-bold border ${getPaymentStatusColor(
-                      appointment.paymentStatus
+                      appointment?.payment?.paymentStatus
                     )}`}>
-                    {appointment.paymentStatus || "PENDING"}
+                    {appointment?.payment?.paymentStatus || "pending"}
+                  </span> */}
+                  <span
+                    className={`flex items-center gap-1 px-2 py-1 border rounded-md text-sm ${getPaymentStatusColor(
+                      appointment?.payment?.paymentStatus
+                    )}`}>
+                    {appointment?.payment?.paymentStatus}
+                    {appointment?.payment?.paymentStatus === "paid" && (
+                      <Check size={16} />
+                    )}
                   </span>
                 </div>
 

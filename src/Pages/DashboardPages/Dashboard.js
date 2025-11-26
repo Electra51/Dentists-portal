@@ -2,7 +2,7 @@ import React from "react";
 import { useGetUserProfileQuery } from "../../redux/api/authApi";
 import { AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import PatientDashboard from "../PatientsDashboardPage/PatientDashboard";
+import PatientDashboard from "./DashboardForPatients/PatientDashboard";
 
 const Dashboard = () => {
   const navigate = useNavigate();

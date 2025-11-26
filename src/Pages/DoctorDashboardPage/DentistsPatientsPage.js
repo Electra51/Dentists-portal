@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { useGetDoctorPatientsQuery } from "../../redux/api/doctorApi";
 import { useNavigate } from "react-router-dom";
+import { Modal } from "../../Components/Modal";
+import PrescriptionForm from "./PrescriptionForm";
+import toast from "react-hot-toast";
 
 export default function DentistsPatientsPage() {
   const navigate = useNavigate();
@@ -26,15 +29,25 @@ export default function DentistsPatientsPage() {
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
   const [sortBy, setSortBy] = useState("createdAt");
   const [selectedPatient, setSelectedPatient] = useState(null);
-
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const { data, isLoading } = useGetDoctorPatientsQuery({
     search: searchQuery,
     bloodGroup: bloodGroupFilter,
     sortBy,
   });
-
+  // ✅ Handle Prescription Success - Refetch appointments if needed
+  const handlePrescriptionSuccess = (prescriptionData) => {
+    console.log("Prescription created:", prescriptionData);
+    // Optionally refetch appointments or update UI
+    toast.success("Prescription created successfully!");
+  };
   const patients = data?.data || [];
-
+  // ✅ Handle Close Modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedAppointment(null);
+  };
   // Calculate statistics
   const stats = {
     total: patients.length,
@@ -55,6 +68,11 @@ export default function DentistsPatientsPage() {
     );
   }
 
+  // ✅ Handle Open Prescription Modal
+  const handleOpenPrescriptionModal = (appointment) => {
+    setSelectedAppointment(appointment);
+    setIsModalOpen(true);
+  };
   return (
     <div className="max-w-7xl mx-auto p-6">
       {/* Header with Statistics */}
@@ -293,8 +311,12 @@ export default function DentistsPatientsPage() {
                     </button>
 
                     <button
+                      // onClick={() =>
+                      //   navigate(`/add-prescription/${patient._id}`)
+                      // }
+
                       onClick={() =>
-                        navigate(`/add-prescription/${patient._id}`)
+                        handleOpenPrescriptionModal(selectedPatient)
                       }
                       className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg hover:from-cyan-600 hover:to-cyan-700 transition-all shadow-sm hover:shadow-md font-medium">
                       <Plus className="w-4 h-4" />
@@ -476,13 +498,10 @@ export default function DentistsPatientsPage() {
               {/* Action Buttons */}
               <div className="flex gap-3 pt-4">
                 <button
-                  onClick={() => {
-                    navigate(`/add-prescription/${selectedPatient._id}`);
-                    setSelectedPatient(null);
-                  }}
+                  onClick={() => handleOpenPrescriptionModal(selectedPatient)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg hover:from-cyan-600 hover:to-cyan-700 transition-all font-medium">
                   <FileText className="w-5 h-5" />
-                  Add Prescription
+                  Add Prescription....
                 </button>
                 <button
                   onClick={() => {
@@ -498,6 +517,18 @@ export default function DentistsPatientsPage() {
           </div>
         </div>
       )}
+
+      {/* ✅ Prescription Modal */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title="Create Prescription">
+        <PrescriptionForm
+          patientData={selectedAppointment}
+          onCancel={handleCloseModal}
+          onSuccess={handlePrescriptionSuccess}
+        />
+      </Modal>
     </div>
   );
 }

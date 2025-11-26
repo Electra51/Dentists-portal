@@ -9,7 +9,10 @@ import {
   Activity,
   LayoutDashboard,
 } from "lucide-react";
-import { useGetPatientAppointmentsQuery } from "../../redux/api/appointmentApi";
+import { Link } from "react-router-dom";
+import { useGetPatientAppointmentsQuery } from "../../../redux/api/appointmentApi";
+import PrimaryButton from "../../../Components/PrimaryButton";
+import DashboardHeader from "../../../Components/DashboardHeader";
 
 const PatientDashboard = () => {
   const { data: appointmentsData, isLoading } =
@@ -50,16 +53,13 @@ const PatientDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen max-w-7xl mx-auto p-4 md:p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-          <LayoutDashboard className="w-8 h-8 text-[#5ecdc9]" />
-          My Dashboard
-        </h1>
-        <p className="text-gray-600">
-          Welcome back! Here's your appointment overview
-        </p>
-      </div>
+    <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
+      <DashboardHeader
+        icon={LayoutDashboard}
+        title=" My Dashboard"
+        subtitle="Welcome back! Here's your appointment overview"
+      />
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {/* Total Appointments */}
@@ -137,9 +137,9 @@ const PatientDashboard = () => {
             <div className="text-center py-12">
               <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-3" />
               <p className="text-gray-500 mb-2">No upcoming appointments</p>
-              <button className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors text-sm font-medium">
-                Book Appointment
-              </button>
+              <Link to={"/appointment"}>
+                <PrimaryButton>Book Appointment</PrimaryButton>
+              </Link>
             </div>
           ) : (
             <div className="space-y-3">
@@ -225,7 +225,7 @@ const PatientDashboard = () => {
                     <div className="flex items-center gap-1">
                       <CheckCircle className="w-4 h-4 text-green-600" />
                       <span className="text-green-700 font-medium">
-                        {appointment.paymentStatus === "PAID"
+                        {appointment?.payment?.paymentStatus === "paid"
                           ? "Paid"
                           : "Pending"}
                       </span>
@@ -237,30 +237,36 @@ const PatientDashboard = () => {
           )}
         </div>
       </div>
-      {/* Quick Actions */}
+
       <div className="mt-8 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           <Activity className="w-5 h-5 text-cyan-600" />
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="p-4 bg-white rounded-lg border-2 border-cyan-200 hover:border-cyan-400 hover:shadow-md transition-all text-left group">
+          <Link
+            to="/appointment"
+            className="p-4 bg-white rounded-lg border-2 border-cyan-200 hover:border-cyan-400 hover:shadow-md transition-all text-left group">
             <Calendar className="w-8 h-8 text-cyan-600 mb-2 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-gray-800 mb-1">Book Appointment</h3>
             <p className="text-sm text-gray-600">Schedule a new dental visit</p>
-          </button>
+          </Link>
 
-          <button className="p-4 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all text-left group">
+          <Link
+            to="my-appointments"
+            className="p-4 bg-white rounded-lg border-2 border-blue-200 hover:border-blue-400 hover:shadow-md transition-all text-left group">
             <FileText className="w-8 h-8 text-blue-600 mb-2 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-gray-800 mb-1">View Appointments</h3>
             <p className="text-sm text-gray-600">See all your bookings</p>
-          </button>
+          </Link>
 
-          <button className="p-4 bg-white rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:shadow-md transition-all text-left group">
+          <Link
+            to="profile"
+            className="p-4 bg-white rounded-lg border-2 border-purple-200 hover:border-purple-400 hover:shadow-md transition-all text-left group">
             <User className="w-8 h-8 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
             <h3 className="font-bold text-gray-800 mb-1">My Profile</h3>
             <p className="text-sm text-gray-600">Update your information</p>
-          </button>
+          </Link>
         </div>
       </div>
       {/* Important Note */}

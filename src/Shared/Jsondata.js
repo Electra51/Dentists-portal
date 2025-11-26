@@ -177,6 +177,7 @@ export const dentistMenuItems = [
 export const patientMenuItems = [
   { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { path: "my-appointments", label: "My Appointments", icon: Calendar },
+  { path: "my-prescriptions", label: "My Prescriptions", icon: FileText },
   { path: "profile", label: "My Profile", icon: UserCircle },
 ];
 
