@@ -8,228 +8,269 @@ import {
   FileText,
   Activity,
   LayoutDashboard,
+  TrendingUp,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useGetPatientAppointmentsQuery } from "../../../redux/api/appointmentApi";
 import PrimaryButton from "../../../Components/PrimaryButton";
 import DashboardHeader from "../../../Components/DashboardHeader";
 import StatsCard from "../../../Components/StatsCard";
+import { useGetPatientDashboardQuery } from "../../../redux/api/dashboardApi";
+import LoadingState from "../../../Components/states/LoadingState";
+import MessageState from "../../../Components/states/MessageState";
+import FormattedDate from "../../../Components/DateTimeFormate/FormattedDate";
+import FormattedTime from "../../../Components/DateTimeFormate/FormattedTime";
 
 const PatientDashboard = () => {
-  const { data: appointmentsData, isLoading } =
-    useGetPatientAppointmentsQuery();
-  const appointments = appointmentsData?.data || [];
+  const {
+    data: dashboardData,
+    isLoading,
+    isError,
+  } = useGetPatientDashboardQuery();
 
-  const totalAppointments = appointments.length;
-  const scheduledAppointments = appointments.filter(
-    (apt) => apt.status?.toLowerCase() === "scheduled"
-  ).length;
-  const completedAppointments = appointments.filter(
-    (apt) => apt.status?.toLowerCase() === "completed"
-  ).length;
-  const cancelledAppointments = appointments.filter(
-    (apt) => apt.status?.toLowerCase() === "cancelled"
-  ).length;
+  const summary = dashboardData?.data?.summary || {};
+  const nextAppointment = dashboardData?.data?.nextAppointment;
+  const recentVisits = dashboardData?.data?.recentVisits || [];
 
-  // Get upcoming appointments (next 3)
-  const upcomingAppointments = appointments
-    .filter((apt) => apt.status?.toLowerCase() === "scheduled")
-    .sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
-    .slice(0, 3);
+  if (isLoading) {
+    return (
+      <LoadingState
+        message="Loading Dashboard..."
+        spinnerColor="border-[#5ecdc9]"
+        height={"min-h-screen"}
+      />
+    );
+  }
 
-  // Get recent appointments (last 3 completed)
-  const recentAppointments = appointments
-    .filter((apt) => apt.status?.toLowerCase() === "completed")
-    .sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate))
-    .slice(0, 3);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  if (isError) {
+    return (
+      <MessageState
+        type="error"
+        title="Unable to Load Dashboard"
+        message="Please try refreshing the page or contact support if the problem persists."
+      />
+    );
+  }
+  const upcomingVisits =
+    dashboardData?.data?.nextPrescriptionVisit?.nextVisit &&
+    new Date(dashboardData.data.nextPrescriptionVisit.nextVisit) > new Date()
+      ? 1
+      : 0;
 
   return (
     <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
       <DashboardHeader
         icon={LayoutDashboard}
-        title=" My Dashboard"
+        title="My Dashboard"
         subtitle="Welcome back! Here's your appointment overview"
       />
-
-      {/* stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* stat */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           title="Total Appointments"
-          value={totalAppointments}
+          value={summary.totalAppointments || 0}
           subtitle="All time bookings"
           icon={Calendar}
-          gradientFrom="from-blue-500"
-          gradientTo="to-blue-600"
+          gradientFrom="from-blue-400"
+          gradientTo="to-blue-500"
         />
-
         <StatsCard
           title="Upcoming"
-          value={scheduledAppointments}
+          value={summary.upcomingAppointments || 0}
           subtitle="Scheduled appointments"
           icon={Clock}
-          gradientFrom="from-cyan-500"
-          gradientTo="to-cyan-600"
+          gradientFrom="from-cyan-400"
+          gradientTo="to-cyan-500"
         />
-
         <StatsCard
           title="Completed"
-          value={completedAppointments}
+          value={summary.completedVisits || 0}
           subtitle="Visits completed"
           icon={CheckCircle}
-          gradientFrom="from-green-500"
-          gradientTo="to-green-600"
+          gradientFrom="from-cyan-400"
+          gradientTo="to-blue-500"
         />
-
         <StatsCard
           title="Cancelled"
-          value={cancelledAppointments}
+          value={summary.cancelledAppointments || 0}
           subtitle="Cancelled bookings"
           icon={XCircle}
-          gradientFrom="from-red-500"
-          gradientTo="to-red-600"
+          gradientFrom="from-red-400"
+          gradientTo="to-orange-500"
+        />
+        <StatsCard
+          title="Active Prescriptions"
+          value={summary?.activePrescriptions}
+          subtitle="Currently active"
+          icon={FileText}
+          gradientFrom="from-purple-400"
+          gradientTo="to-blue-400"
+        />
+        <StatsCard
+          title="Pending Payments"
+          value={summary?.pendingPayments}
+          subtitle="Payment required at clinic"
+          icon={TrendingUp}
+          gradientFrom="from-pink-500"
+          gradientTo="to-cyan-400"
+        />
+        <StatsCard
+          title="Upcoming Visits"
+          value={upcomingVisits}
+          subtitle="Scheduled visits"
+          icon={Calendar}
+          gradientFrom="from-cyan-500"
+          gradientTo="to-green-400"
         />
       </div>
-      {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Appointments */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-150 py-4 px-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-cyan-600" />
+              <div className="p-2 bg-cyan-100 rounded-lg">
+                <Calendar className="w-5 h-5 text-cyan-600" />
+              </div>
               <h2 className="text-xl font-bold text-gray-800">
-                Upcoming Appointments
+                Next Appointment
               </h2>
             </div>
             <span className="px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-xs font-semibold">
-              {scheduledAppointments} Scheduled
+              {summary.upcomingAppointments || 0} Upcoming
             </span>
           </div>
 
-          {isLoading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-cyan-500 border-t-transparent"></div>
-              <p className="text-gray-500 mt-2">Loading...</p>
-            </div>
-          ) : upcomingAppointments.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 mb-2">No upcoming appointments</p>
-              <Link to={"/appointment"}>
-                <PrimaryButton>Book Appointment</PrimaryButton>
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {upcomingAppointments.map((appointment) => (
-                <div
-                  key={appointment.id}
-                  className="p-4 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-lg border border-cyan-200 hover:shadow-md transition-all">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-bold text-gray-800">
-                        Dr. {appointment.doctorName}
-                      </h4>
-                      <p className="text-xs text-gray-600">
-                        {appointment.doctorSpecialization}
-                      </p>
-                    </div>
-                    <span className="px-2 py-1 bg-cyan-600 text-white rounded text-xs font-semibold">
-                      Scheduled
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-700">
-                    <div className="flex items-center gap-1">
+          {nextAppointment ? (
+            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-5 border-2 border-cyan-200">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                  {nextAppointment.doctorName?.charAt(0) || "D"}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-gray-900 text-lg mb-1">
+                    Dr. {nextAppointment.doctorName}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {nextAppointment.doctorSpecialization || "Dentist"}
+                  </p>
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
                       <Calendar className="w-4 h-4 text-cyan-600" />
-                      <span>{formatDate(appointment.appointmentDate)}</span>
+                      <span className="font-medium text-gray-700">
+                        <FormattedDate date={nextAppointment.appointmentDate} />
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
                       <Clock className="w-4 h-4 text-cyan-600" />
-                      <span>{appointment.appointmentTime}</span>
+                      <span className="font-medium text-gray-700">
+                        <FormattedTime
+                          timeString={nextAppointment.appointmentTime}
+                        />
+                      </span>
                     </div>
                   </div>
                 </div>
-              ))}
+              </div>
+              <Link to="/patient/my-appointments">
+                <button className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-700 hover:to-blue-700 transition-all shadow-md">
+                  View Details
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar className="w-10 h-10 text-gray-300" />
+              </div>
+              <p className="text-gray-500 font-medium mb-4">
+                No upcoming appointments
+              </p>
+              <Link to="/appointment">
+                <PrimaryButton>Book New Appointment</PrimaryButton>
+              </Link>
             </div>
           )}
         </div>
 
-        {/* Recent Appointments */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
+        {/* recent visits */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-150 py-4 px-5 hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
-              <Activity className="w-5 h-5 text-green-600" />
+              <div className="p-2 bg-green-100 rounded-lg">
+                <Activity className="w-5 h-5 text-green-600" />
+              </div>
               <h2 className="text-xl font-bold text-gray-800">Recent Visits</h2>
             </div>
             <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-              {completedAppointments} Completed
+              {summary.completedVisits || 0} Completed
             </span>
           </div>
 
-          {isLoading ? (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-green-500 border-t-transparent"></div>
-              <p className="text-gray-500 mt-2">Loading...</p>
-            </div>
-          ) : recentAppointments.length === 0 ? (
-            <div className="text-center py-12">
-              <CheckCircle className="w-16 h-16 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500">No completed appointments yet</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {recentAppointments.map((appointment) => (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scrollbar">
+            {recentVisits.length > 0 ? (
+              recentVisits.map((visit) => (
                 <div
-                  key={appointment.id}
-                  className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 hover:shadow-md transition-all">
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h4 className="font-bold text-gray-800">
-                        Dr. {appointment.doctorName}
-                      </h4>
-                      <p className="text-xs text-gray-600">
-                        {appointment.doctorSpecialization}
-                      </p>
+                  key={visit._id}
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200 hover:shadow-md transition-all">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div>
+                        <h4 className="font-bold text-gray-900">
+                          Dr. {visit.doctorName}
+                        </h4>
+                        <p className="text-xs text-gray-600">
+                          {visit.doctorSpecialization || "Dentist"}
+                        </p>
+                      </div>
                     </div>
-                    <span className="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold">
+                    <span className="px-2 py-1 bg-green-600 text-white rounded-md text-xs font-semibold">
                       Completed
                     </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm text-gray-700">
-                    <div className="flex items-center gap-1">
+                  <div className="flex items-center justify-start gap-2 text-sm">
+                    <div className="flex items-center gap-1 text-gray-700">
                       <Calendar className="w-4 h-4 text-green-600" />
-                      <span>{formatDate(appointment.appointmentDate)}</span>
+                      <span>
+                        <FormattedDate date={visit.appointmentDate} />
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span className="text-green-700 font-medium">
-                        {appointment?.payment?.paymentStatus === "paid"
+                    <div
+                      className={`flex items-center gap-1 px-2 py-1 rounded ${
+                        visit.payment?.paymentStatus === "paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-orange-100 text-orange-700"
+                      }`}>
+                      <CheckCircle className="w-3 h-3" />
+                      <span className="font-semibold text-xs">
+                        {visit.payment?.paymentStatus === "paid"
                           ? "Paid"
                           : "Pending"}
                       </span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
+              ))
+            ) : (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-10 h-10 text-gray-300" />
+                </div>
+                <p className="text-gray-500 font-medium">
+                  No completed visits yet
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="mt-8 bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl shadow-sm border border-cyan-200 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-          <Activity className="w-5 h-5 text-cyan-600" />
-          Quick Actions
-        </h2>
+      <div className="bg-cyan-50 rounded-xl shadow-sm border border-cyan-200 p-6 mb-8">
+        <div className="flex items-center gap-2 mb-5">
+          <div className="p-2 bg-blue-100 rounded-lg">
+            <Activity className="w-5 h-5 text-blue-600" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-800">Quick Actions</h2>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
             to="/appointment"
@@ -256,7 +297,7 @@ const PatientDashboard = () => {
           </Link>
         </div>
       </div>
-      {/* Important Note */}
+
       <div className="mt-6 bg-yellow-50 border-2 border-yellow-200 rounded-xl p-4">
         <div className="flex items-start gap-3">
           <div className="p-2 bg-yellow-100 rounded-lg">

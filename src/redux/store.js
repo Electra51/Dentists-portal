@@ -5,6 +5,7 @@ import { adminApi } from "./api/adminApi";
 import { doctorApi } from "./api/doctorApi";
 import { appointmentApi } from "./api/appointmentApi";
 import { prescriptionApi } from "./api/prescriptionApi";
+import { dashboardApi } from "./api/dashboardApi";
 export const store = configureStore({
   reducer: {
     [authApi.reducerPath]: authApi.reducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
     [doctorApi.reducerPath]: doctorApi.reducer,
     [appointmentApi.reducerPath]: appointmentApi.reducer,
     [prescriptionApi.reducerPath]: prescriptionApi.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -19,5 +21,6 @@ export const store = configureStore({
       .concat(adminApi.middleware)
       .concat(doctorApi.middleware)
       .concat(prescriptionApi.middleware)
-      .concat(appointmentApi.middleware),
+      .concat(appointmentApi.middleware)
+      .concat(dashboardApi.middleware),
 });
