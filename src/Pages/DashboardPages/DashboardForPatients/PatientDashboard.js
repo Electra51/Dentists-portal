@@ -13,6 +13,7 @@ import { Link } from "react-router-dom";
 import { useGetPatientAppointmentsQuery } from "../../../redux/api/appointmentApi";
 import PrimaryButton from "../../../Components/PrimaryButton";
 import DashboardHeader from "../../../Components/DashboardHeader";
+import StatsCard from "../../../Components/StatsCard";
 
 const PatientDashboard = () => {
   const { data: appointmentsData, isLoading } =
@@ -60,57 +61,43 @@ const PatientDashboard = () => {
         subtitle="Welcome back! Here's your appointment overview"
       />
 
-      {/* Statistics Cards */}
+      {/* stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {/* Total Appointments */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-              <Calendar className="w-6 h-6" />
-            </div>
-            <span className="text-3xl font-bold">{totalAppointments}</span>
-          </div>
-          <h3 className="text-blue-100 text-sm font-medium mb-1">
-            Total Appointments
-          </h3>
-          <p className="text-xs text-blue-200">All time bookings</p>
-        </div>
+        <StatsCard
+          title="Total Appointments"
+          value={totalAppointments}
+          subtitle="All time bookings"
+          icon={Calendar}
+          gradientFrom="from-blue-500"
+          gradientTo="to-blue-600"
+        />
 
-        {/* Scheduled Appointments */}
-        <div className="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-              <Clock className="w-6 h-6" />
-            </div>
-            <span className="text-3xl font-bold">{scheduledAppointments}</span>
-          </div>
-          <h3 className="text-cyan-100 text-sm font-medium mb-1">Upcoming</h3>
-          <p className="text-xs text-cyan-200">Scheduled appointments</p>
-        </div>
+        <StatsCard
+          title="Upcoming"
+          value={scheduledAppointments}
+          subtitle="Scheduled appointments"
+          icon={Clock}
+          gradientFrom="from-cyan-500"
+          gradientTo="to-cyan-600"
+        />
 
-        {/* Completed Appointments */}
-        <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-              <CheckCircle className="w-6 h-6" />
-            </div>
-            <span className="text-3xl font-bold">{completedAppointments}</span>
-          </div>
-          <h3 className="text-green-100 text-sm font-medium mb-1">Completed</h3>
-          <p className="text-xs text-green-200">Visits completed</p>
-        </div>
+        <StatsCard
+          title="Completed"
+          value={completedAppointments}
+          subtitle="Visits completed"
+          icon={CheckCircle}
+          gradientFrom="from-green-500"
+          gradientTo="to-green-600"
+        />
 
-        {/* Cancelled Appointments */}
-        <div className="bg-gradient-to-br from-red-500 to-red-600 text-white rounded-xl p-6 shadow-lg">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 bg-white bg-opacity-20 rounded-lg">
-              <XCircle className="w-6 h-6" />
-            </div>
-            <span className="text-3xl font-bold">{cancelledAppointments}</span>
-          </div>
-          <h3 className="text-red-100 text-sm font-medium mb-1">Cancelled</h3>
-          <p className="text-xs text-red-200">Cancelled bookings</p>
-        </div>
+        <StatsCard
+          title="Cancelled"
+          value={cancelledAppointments}
+          subtitle="Cancelled bookings"
+          icon={XCircle}
+          gradientFrom="from-red-500"
+          gradientTo="to-red-600"
+        />
       </div>
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
