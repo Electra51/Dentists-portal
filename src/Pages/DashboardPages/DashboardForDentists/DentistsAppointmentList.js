@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import React, { useState, useMemo } from "react";
 import {
   Calendar,
@@ -11,7 +11,6 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
-  Loader2,
   Eye,
   FileText,
   Timer,
@@ -22,27 +21,32 @@ import {
   AlertTriangle,
   Download,
   Plus,
+  CalendarCheck,
 } from "lucide-react";
+
+import toast from "react-hot-toast";
+import { Modal } from "../../../Components/Modal";
+import PaymentModal from "./PaymentModal";
+import PrescriptionForm from "./PrescriptionForm";
+import LoadingState from "../../../Components/states/LoadingState";
+import FormattedDate from "../../../Components/DateTimeFormate/FormattedDate";
+import DashboardHeader from "../../../Components/DashboardHeader";
+import StatsCard from "../../../Components/StatsCard";
+import EmptyState from "../../../Components/states/EmptyState";
 import {
   useGetDoctorAppointmentsQuery,
+  useMarkPaymentReceivedMutation,
   useUpdateAppointmentStatusMutation,
-} from "../../redux/api/doctorApi";
-import toast from "react-hot-toast";
-import { Modal } from "../../Components/Modal";
-import PrescriptionForm from "./PrescriptionForm";
-import { useMarkPaymentReceivedMutation } from "../../redux/api/appointmentApi";
-import PaymentModal from "./PaymentModal";
+} from "../../../redux/api/appointmentApi";
 
-export default function DoctorAppointment() {
+export default function DentistsAppointmentList() {
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [paymentFilter, setPaymentFilter] = useState("all");
-  const [expandedAppointment, setExpandedAppointment] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // ✅ Payment Modal State
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPaymentAppointment, setSelectedPaymentAppointment] =
     useState(null);
@@ -50,22 +54,22 @@ export default function DoctorAppointment() {
   const { data, isLoading, refetch } = useGetDoctorAppointmentsQuery({
     date: selectedDate,
     status: statusFilter === "all" ? "" : statusFilter,
-    search: searchQuery,
+    search: searchTerm,
   });
 
   const [updateStatus, { isLoading: isUpdating }] =
     useUpdateAppointmentStatusMutation();
-  // ✅ Payment Mutation
+
   const [markPayment, { isLoading: isMarkingPayment }] =
     useMarkPaymentReceivedMutation();
+
   const appointments = data?.data || [];
-  // ✅ Handle Payment Modal Open
+
   const handleOpenPaymentModal = (appointment) => {
     setSelectedPaymentAppointment(appointment);
     setIsPaymentModalOpen(true);
   };
 
-  // ✅ Handle Payment Update
   const handleMarkAsPaid = async (appointmentId, amount, note) => {
     try {
       await markPayment({ appointmentId, amount, note }).unwrap();
@@ -79,26 +83,21 @@ export default function DoctorAppointment() {
     }
   };
 
-  // ✅ Handle Prescription Success - Refetch appointments if needed
   const handlePrescriptionSuccess = (prescriptionData) => {
     console.log("Prescription created:", prescriptionData);
-    // Optionally refetch appointments or update UI
     toast.success("Prescription created successfully!");
   };
 
-  // ✅ Handle Open Prescription Modal
   const handleOpenPrescriptionModal = (appointment) => {
     setSelectedAppointment(appointment);
     setIsModalOpen(true);
   };
 
-  // ✅ Handle Close Modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedAppointment(null);
   };
 
-  // Statistics calculation
   const statistics = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -222,22 +221,6 @@ export default function DoctorAppointment() {
     );
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const formatTime = (time24) => {
-    const [hours, minutes] = time24.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const hour12 = hour % 12 || 12;
-    return `${hour12}:${minutes} ${ampm}`;
-  };
-
   const filteredAppointments = useMemo(() => {
     return appointments.filter((apt) => {
       if (paymentFilter === "paid" && apt.payment.paymentStatus !== "paid")
@@ -253,110 +236,76 @@ export default function DoctorAppointment() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
-      </div>
+      <LoadingState
+        message="Loading all appointments..."
+        spinnerColor="border-[#5ecdc9]"
+        height={"min-h-screen"}
+      />
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-          <Calendar className="w-8 h-8 text-cyan-500" />
-          My Appointments
-        </h1>
-        <p className="text-gray-600">
-          Manage and track your appointments efficiently
-        </p>
-      </div>
+    <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
+      <DashboardHeader
+        icon={CalendarCheck}
+        title="Appointments List"
+        subtitle="View and manage all your dental appointments efficiently"
+      />
 
-      {/* Statistics Dashboard */}
+      {/* stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-xl border border-cyan-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-cyan-700 font-medium">
-                Today's Appointments
-              </p>
-              <p className="text-2xl font-bold text-cyan-900">
-                {statistics.today}
-              </p>
-              <p className="text-xs text-cyan-600 mt-1">
-                {statistics.confirmed} confirmed
-              </p>
-            </div>
-            <Calendar className="w-10 h-10 text-cyan-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Today's Appointments"
+          value={statistics.today}
+          subtitle={`${statistics.confirmed} confirmed`}
+          icon={Calendar}
+          gradientFrom="from-cyan-500"
+          gradientTo="to-green-400"
+        />
 
-        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-4 rounded-xl border border-yellow-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-yellow-700 font-medium">Pending</p>
-              <p className="text-2xl font-bold text-yellow-900">
-                {statistics.pending}
-              </p>
-              <p className="text-xs text-yellow-600 mt-1">
-                Awaiting confirmation
-              </p>
-            </div>
-            <AlertCircle className="w-10 h-10 text-yellow-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Pending"
+          value={statistics.pending}
+          subtitle="Awaiting confirmation"
+          icon={AlertCircle}
+          gradientFrom="from-yellow-200"
+          gradientTo="to-yellow-400"
+        />
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-green-700 font-medium">
-                Total Revenue
-              </p>
-              <p className="text-2xl font-bold text-green-900">
-                $ {statistics.totalRevenue}
-              </p>
-              <p className="text-xs text-green-600 mt-1">
-                {statistics.paidAppointments} paid appointments
-              </p>
-            </div>
-            <DollarSign className="w-10 h-10 text-green-500" />
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-orange-700 font-medium">
-                Pending Revenue
-              </p>
-              <p className="text-2xl font-bold text-orange-900">
-                $ {statistics.pendingRevenue}
-              </p>
-              <p className="text-xs text-orange-600 mt-1">
-                {appointments.length - statistics.paidAppointments} unpaid
-              </p>
-            </div>
-            <TrendingUp className="w-10 h-10 text-orange-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Total Revenue"
+          value={statistics.totalRevenue}
+          subtitle={`${statistics.paidAppointments} paid appointments`}
+          icon={DollarSign}
+          gradientFrom="from-blue-400"
+          gradientTo="to-cyan-300"
+        />
+        <StatsCard
+          title="Pending Revenue"
+          value={statistics.pendingRevenue}
+          subtitle={`${
+            appointments.length - statistics.paidAppointments
+          } unpaid`}
+          icon={TrendingUp}
+          gradientFrom="from-orange-300"
+          gradientTo="to-orange-400"
+        />
       </div>
 
-      {/* Filters */}
+      {/* filters */}
       <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search patient..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
           </div>
 
-          {/* Date Filter */}
           <div className="relative">
             <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -367,7 +316,6 @@ export default function DoctorAppointment() {
             />
           </div>
 
-          {/* Status Filter */}
           <div className="relative">
             <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <select
@@ -384,7 +332,6 @@ export default function DoctorAppointment() {
             </select>
           </div>
 
-          {/* Payment Filter */}
           <div className="relative">
             <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <select
@@ -398,7 +345,6 @@ export default function DoctorAppointment() {
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-200">
           <button
             onClick={() => setSelectedDate(today)}
@@ -409,7 +355,7 @@ export default function DoctorAppointment() {
             onClick={() => {
               setSelectedDate("");
               setStatusFilter("all");
-              setSearchQuery("");
+              setsearchTerm("");
               setPaymentFilter("all");
             }}
             className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
@@ -430,18 +376,18 @@ export default function DoctorAppointment() {
         </div>
       </div>
 
-      {/* Appointments List */}
+      {/* appointments list */}
       <div className="space-y-4">
         {filteredAppointments.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm p-12 text-center border border-gray-200">
-            <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No appointments found
-            </h3>
-            <p className="text-gray-600">
-              Try adjusting your filters or check back later
-            </p>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="No appointments Found"
+            message={
+              searchTerm
+                ? "Try adjusting your filters or check back later"
+                : "You don't have any appointments yet"
+            }
+          />
         ) : (
           filteredAppointments.map((appointment) => (
             <div
@@ -480,7 +426,7 @@ export default function DoctorAppointment() {
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          {formatDate(appointment.appointmentDate)}
+                          <FormattedDate date={appointment.appointmentDate} />
                         </div>
                         <div className="flex items-center gap-2 text-gray-600">
                           <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -493,7 +439,6 @@ export default function DoctorAppointment() {
                         </div>
                       </div>
 
-                      {/* Service & Payment Info */}
                       <div className="flex flex-wrap items-center gap-3 mb-3">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
                           <FileText className="w-4 h-4" />
@@ -505,7 +450,6 @@ export default function DoctorAppointment() {
                         </div>
                       </div>
 
-                      {/* Patient Notes */}
                       {appointment.patientNotes && (
                         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                           <p className="text-sm text-blue-900">
@@ -517,35 +461,9 @@ export default function DoctorAppointment() {
                           </p>
                         </div>
                       )}
-
-                      {/* Expandable Section */}
-                      {expandedAppointment === appointment._id && (
-                        <div className="mt-4 pt-4 border-t border-gray-200 space-y-3">
-                          {appointment.doctorNotes && (
-                            <div className="p-3 bg-gray-50 rounded-lg">
-                              <p className="text-sm text-gray-900">
-                                <span className="font-semibold">
-                                  Doctor Notes:
-                                </span>{" "}
-                                {appointment.doctorNotes}
-                              </p>
-                            </div>
-                          )}
-
-                          {appointment.symptoms?.length > 0 && (
-                            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                              <p className="text-sm text-red-900">
-                                <span className="font-semibold">Symptoms:</span>{" "}
-                                {appointment.symptoms.join(", ")}
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
                     {appointment.status === "pending" && (
                       <>
@@ -603,7 +521,6 @@ export default function DoctorAppointment() {
                       </button>
                     )}
 
-                    {/* ✅ Prescription Button - Show for confirmed/completed */}
                     {(appointment.status === "confirmed" ||
                       appointment.status === "completed") && (
                       <button
@@ -613,7 +530,7 @@ export default function DoctorAppointment() {
                         Prescription
                       </button>
                     )}
-                    {/* ✅ Mark as Paid Button - Only if payment is pending */}
+
                     {appointment.payment.paymentStatus === "pending" && (
                       <button
                         onClick={() => handleOpenPaymentModal(appointment)}
@@ -638,7 +555,6 @@ export default function DoctorAppointment() {
         )}
       </div>
 
-      {/* ✅ Prescription Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
@@ -650,7 +566,6 @@ export default function DoctorAppointment() {
         />
       </Modal>
 
-      {/* Payment Modal */}
       {isPaymentModalOpen && (
         <PaymentModal
           appointment={selectedPaymentAppointment}

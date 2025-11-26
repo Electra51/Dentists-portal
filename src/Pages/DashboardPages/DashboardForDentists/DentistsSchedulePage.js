@@ -12,8 +12,9 @@ import {
 import {
   useGetDoctorScheduleQuery,
   useUpdateDoctorScheduleMutation,
-} from "../../redux/api/doctorApi";
+} from "../../../redux/api/doctorApi";
 import toast from "react-hot-toast";
+import DashboardHeader from "../../../Components/DashboardHeader";
 
 const DAYS_OF_WEEK = [
   { key: "sunday", label: "Sunday" },
@@ -35,7 +36,7 @@ const DEFAULT_SCHEDULE = {
   saturday: { isAvailable: true, slots: [{ start: "09:00", end: "13:00" }] },
 };
 
-export default function DoctorSchedule() {
+export default function DentistsSchedulePage() {
   const { data, isLoading } = useGetDoctorScheduleQuery();
   const [updateSchedule, { isLoading: isUpdating }] =
     useUpdateDoctorScheduleMutation();
@@ -202,21 +203,16 @@ export default function DoctorSchedule() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
+    <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
+      <div>
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-2">
-              <Clock className="w-8 h-8 text-cyan-500" />
-              My Schedule
-            </h1>
-            <p className="text-gray-600">
-              Set your weekly availability and working hours
-            </p>
-          </div>
+          <DashboardHeader
+            icon={Clock}
+            title="Set Schedule"
+            subtitle="Set your weekly availability and working hours"
+          />
 
-          <div className="text-right">
+          <div className="text-right mb-8">
             <div className="text-sm text-gray-600 mb-1">Total Weekly Hours</div>
             <div className="text-3xl font-bold text-cyan-600">
               {getTotalWeeklyHours()}h

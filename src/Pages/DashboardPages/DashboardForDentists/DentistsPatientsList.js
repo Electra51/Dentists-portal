@@ -17,13 +17,14 @@ import {
   Clock,
   User,
 } from "lucide-react";
-import { useGetDoctorPatientsQuery } from "../../redux/api/doctorApi";
+import { useGetDoctorPatientsQuery } from "../../../redux/api/doctorApi";
 import { useNavigate } from "react-router-dom";
-import { Modal } from "../../Components/Modal";
+import { Modal } from "../../../Components/Modal";
 import PrescriptionForm from "./PrescriptionForm";
 import toast from "react-hot-toast";
+import DashboardHeader from "../../../Components/DashboardHeader";
 
-export default function DentistsPatientsPage() {
+export default function DentistsPatientsList() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
@@ -74,111 +75,102 @@ export default function DentistsPatientsPage() {
     setIsModalOpen(true);
   };
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      {/* Header with Statistics */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3 mb-6">
-          <Users className="w-8 h-8 text-cyan-500" />
-          My Patients
-        </h1>
-
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-xl border border-cyan-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-cyan-700 font-medium">
-                  Total Patients
-                </p>
-                <p className="text-2xl font-bold text-cyan-900">
-                  {stats.total}
-                </p>
-              </div>
-              <Users className="w-8 h-8 text-cyan-500" />
+    <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
+      <DashboardHeader
+        icon={Users}
+        title="Patients List"
+        subtitle="Manage your patients and view details"
+      />
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-xl border border-cyan-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-cyan-700 font-medium">
+                Total Patients
+              </p>
+              <p className="text-2xl font-bold text-cyan-900">{stats.total}</p>
             </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-700 font-medium">
-                  Recent Visits
-                </p>
-                <p className="text-2xl font-bold text-blue-900">
-                  {stats.recentVisits}
-                </p>
-              </div>
-              <TrendingUp className="w-8 h-8 text-blue-500" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-orange-700 font-medium">
-                  With Allergies
-                </p>
-                <p className="text-2xl font-bold text-orange-900">
-                  {stats.withAllergies}
-                </p>
-              </div>
-              <AlertCircle className="w-8 h-8 text-orange-500" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-red-700 font-medium">
-                  Chronic Cases
-                </p>
-                <p className="text-2xl font-bold text-red-900">
-                  {stats.chronicPatients}
-                </p>
-              </div>
-              <Activity className="w-8 h-8 text-red-500" />
-            </div>
+            <Users className="w-8 h-8 text-cyan-500" />
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search by name, email, phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-blue-700 font-medium">Recent Visits</p>
+              <p className="text-2xl font-bold text-blue-900">
+                {stats.recentVisits}
+              </p>
+            </div>
+            <TrendingUp className="w-8 h-8 text-blue-500" />
           </div>
-
-          <select
-            value={bloodGroupFilter}
-            onChange={(e) => setBloodGroupFilter(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-            <option value="all">All Blood Groups</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
-            <option value="createdAt">Newest First</option>
-            <option value="oldest">Oldest First</option>
-            <option value="name">Name (A-Z)</option>
-            <option value="lastVisit">Recent Visit</option>
-          </select>
         </div>
+
+        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-orange-700 font-medium">
+                With Allergies
+              </p>
+              <p className="text-2xl font-bold text-orange-900">
+                {stats.withAllergies}
+              </p>
+            </div>
+            <AlertCircle className="w-8 h-8 text-orange-500" />
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-red-700 font-medium">Chronic Cases</p>
+              <p className="text-2xl font-bold text-red-900">
+                {stats.chronicPatients}
+              </p>
+            </div>
+            <Activity className="w-8 h-8 text-red-500" />
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+          <input
+            type="text"
+            placeholder="Search by name, email, phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          />
+        </div>
+
+        <select
+          value={bloodGroupFilter}
+          onChange={(e) => setBloodGroupFilter(e.target.value)}
+          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+          <option value="all">All Blood Groups</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent">
+          <option value="createdAt">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="name">Name (A-Z)</option>
+          <option value="lastVisit">Recent Visit</option>
+        </select>
       </div>
 
       {/* Patients Table */}

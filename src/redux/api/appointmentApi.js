@@ -38,34 +38,32 @@ export const appointmentApi = createApi({
       providesTags: ["Appointments"],
     }),
 
-    // Get doctor appointments
+    // ==================== APPOINTMENTS ====================
     getDoctorAppointments: builder.query({
-      query: ({ status, date }) => {
-        let url = "/doctor";
-        const params = [];
-        if (status) params.push(`status=${status}`);
-        if (date) params.push(`date=${date}`);
-        if (params.length) url += `?${params.join("&")}`;
-        return url;
+      query: ({ date, status, search } = {}) => {
+        const params = new URLSearchParams();
+        if (date) params.append("date", date);
+        if (status) params.append("status", status);
+        if (search) params.append("search", search);
+        return `/doctor`;
       },
       providesTags: ["Appointments"],
     }),
 
-    // Get appointment details
     getAppointmentDetails: builder.query({
-      query: (appointmentId) => `/${appointmentId}`,
+      query: (appointmentId) => `/appointment/${appointmentId}`,
       providesTags: ["Appointments"],
     }),
 
-    // Update appointment status
     updateAppointmentStatus: builder.mutation({
-      query: ({ appointmentId, ...data }) => ({
-        url: `/${appointmentId}/status`,
-        method: "PATCH",
-        body: data,
+      query: ({ appointmentId, status }) => ({
+        url: `/appointment/${appointmentId}/status`,
+        method: "PUT",
+        body: { status },
       }),
-      invalidatesTags: ["Appointments"],
+      invalidatesTags: ["Appointments", "Dashboard"],
     }),
+
     // ✅ NEW: Mark payment as received (Doctor only)
     markPaymentReceived: builder.mutation({
       query: ({ appointmentId, amount, note }) => ({

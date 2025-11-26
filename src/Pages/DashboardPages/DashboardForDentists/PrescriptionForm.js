@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar, User, FileText, Loader2 } from "lucide-react";
-import { useCreatePrescriptionMutation } from "../../redux/api/prescriptionApi";
+import { useCreatePrescriptionMutation } from "../../../redux/api/prescriptionApi";
 import toast from "react-hot-toast";
 
 const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
+  console.log("ooo");
+
   const [formData, setFormData] = useState({
     patientName: "",
     patientId: "",

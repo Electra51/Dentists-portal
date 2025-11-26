@@ -32,32 +32,6 @@ export const doctorApi = createApi({
       providesTags: ["Dashboard"],
     }),
 
-    // ==================== APPOINTMENTS ====================
-    getDoctorAppointments: builder.query({
-      query: ({ date, status, search } = {}) => {
-        const params = new URLSearchParams();
-        if (date) params.append("date", date);
-        if (status) params.append("status", status);
-        if (search) params.append("search", search);
-        return `/appointments?${params.toString()}`;
-      },
-      providesTags: ["Appointments"],
-    }),
-
-    getAppointmentDetails: builder.query({
-      query: (appointmentId) => `/appointment/${appointmentId}`,
-      providesTags: ["Appointments"],
-    }),
-
-    updateAppointmentStatus: builder.mutation({
-      query: ({ appointmentId, status }) => ({
-        url: `/appointment/${appointmentId}/status`,
-        method: "PUT",
-        body: { status },
-      }),
-      invalidatesTags: ["Appointments", "Dashboard"],
-    }),
-
     // ==================== PATIENTS ====================
     getDoctorPatients: builder.query({
       query: ({ search = "", bloodGroup = "all" } = {}) =>
@@ -171,9 +145,6 @@ export const doctorApi = createApi({
 
 export const {
   useGetDoctorDashboardQuery,
-  useGetDoctorAppointmentsQuery,
-  useGetAppointmentDetailsQuery,
-  useUpdateAppointmentStatusMutation,
   useGetDoctorPatientsQuery,
   useGetPatientDetailsByDoctorQuery,
   useGetDoctorPrescriptionsQuery,

@@ -13,17 +13,17 @@ import Patients from "../../Pages/PatientsList/Patients";
 import About from "../../Pages/AboutPage/About";
 import Home from "../../Pages/HomePage/Home";
 import Appointment from "../../Pages/AppointmentPage/Appointment";
-import DentistSettingsPage from "../../Pages/DoctorDashboardPage/DentistSettingsPage";
-import DoctorSchedule from "../../Pages/DoctorDashboardPage/DoctorSchedule";
-import DoctorAppointment from "../../Pages/DoctorDashboardPage/DoctorAppointment";
 import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
 import DentistDetailsPage from "../../Pages/DentistsMenuPage/DentistDetailsPage";
 import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBookingPage";
-import DentistsPatientsPage from "../../Pages/DoctorDashboardPage/DentistsPatientsPage";
-import AllPrescriptionListDoctor from "../../Pages/DoctorDashboardPage/AllPrescriptionListDoctor";
 import Dashboard from "../../Pages/DashboardPages/Dashboard";
 import MyPrescriptionPage from "../../Pages/DashboardPages/DashboardForPatients/MyPrescriptionPage";
 import MyAppointmentPage from "../../Pages/DashboardPages/DashboardForPatients/MyAppointmentPage";
+import DentistsAppointmentList from "../../Pages/DashboardPages/DashboardForDentists/DentistsAppointmentList";
+import DentistsPatientsList from "../../Pages/DashboardPages/DashboardForDentists/DentistsPatientsList";
+import DentistsPrescriptionList from "../../Pages/DashboardPages/DashboardForDentists/DentistsPrescriptionList";
+import DentistsSchedulePage from "../../Pages/DashboardPages/DashboardForDentists/DentistsSchedulePage";
+import DentistSettingsPage from "../../Pages/DashboardPages/DashboardForDentists/DentistSettingsPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -87,7 +87,7 @@ const router = createBrowserRouter([
       },
       {
         path: "appointments",
-        element: <DoctorAppointment />,
+        element: <DentistsAppointmentList />,
       },
       {
         path: "my-appointments",
@@ -104,7 +104,7 @@ const router = createBrowserRouter([
       },
       {
         path: "my-patients",
-        element: <DentistsPatientsPage />,
+        element: <DentistsPatientsList />,
       },
       {
         path: "my-prescriptions",
@@ -116,11 +116,11 @@ const router = createBrowserRouter([
       },
       {
         path: "prescriptions",
-        element: <AllPrescriptionListDoctor />,
+        element: <DentistsPrescriptionList />,
       },
       {
         path: "schedule",
-        element: <DoctorSchedule />,
+        element: <DentistsSchedulePage />,
       },
       {
         path: "reviews",

@@ -12,8 +12,10 @@ import {
   Check,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useGetPatientAppointmentsQuery } from "../../../redux/api/appointmentApi";
-import { useUpdateAppointmentStatusMutation } from "../../../redux/api/doctorApi";
+import {
+  useGetPatientAppointmentsQuery,
+  useUpdateAppointmentStatusMutation,
+} from "../../../redux/api/appointmentApi";
 import PrimaryButton from "../../../Components/PrimaryButton";
 import DashboardHeader from "../../../Components/DashboardHeader";
 import LoadingState from "../../../Components/states/LoadingState";
