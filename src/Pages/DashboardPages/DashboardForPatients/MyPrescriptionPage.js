@@ -129,9 +129,9 @@ const MyPrescriptionPage = () => {
         />
 
         <StatsCard
-          title="Upcoming Visits"
+          title="Follow-up Visits"
           value={upcomingVisits}
-          subtitle="Scheduled visits"
+          subtitle="Prescribed next visits"
           icon={Calendar}
           gradientFrom="from-green-500"
           gradientTo="to-green-400"

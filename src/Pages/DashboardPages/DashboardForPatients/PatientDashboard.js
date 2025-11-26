@@ -9,6 +9,8 @@ import {
   Activity,
   LayoutDashboard,
   TrendingUp,
+  ClipboardList,
+  CheckCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import PrimaryButton from "../../../Components/PrimaryButton";
@@ -26,6 +28,7 @@ const PatientDashboard = () => {
     isLoading,
     isError,
   } = useGetPatientDashboardQuery();
+  console.log("dashboardData", dashboardData);
 
   const summary = dashboardData?.data?.summary || {};
   const nextAppointment = dashboardData?.data?.nextAppointment;
@@ -50,9 +53,10 @@ const PatientDashboard = () => {
       />
     );
   }
-  const upcomingVisits =
-    dashboardData?.data?.nextPrescriptionVisit?.nextVisit &&
-    new Date(dashboardData.data.nextPrescriptionVisit.nextVisit) > new Date()
+
+  const upcomingFollowUpVisits =
+    summary.nextPrescriptionVisit?.nextVisit &&
+    new Date(summary.nextPrescriptionVisit.nextVisit) > new Date()
       ? 1
       : 0;
 
@@ -65,7 +69,7 @@ const PatientDashboard = () => {
       />
       {/* stat */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatsCard
+        {/* <StatsCard
           title="Total Appointments"
           value={summary.totalAppointments || 0}
           subtitle="All time bookings"
@@ -74,17 +78,17 @@ const PatientDashboard = () => {
           gradientTo="to-blue-500"
         />
         <StatsCard
-          title="Upcoming"
+          title="Scheduled Appointments"
           value={summary.upcomingAppointments || 0}
-          subtitle="Scheduled appointments"
+          subtitle="Booked appointments"
           icon={Clock}
           gradientFrom="from-cyan-400"
           gradientTo="to-cyan-500"
         />
         <StatsCard
-          title="Completed"
+          title="Completed Visits"
           value={summary.completedVisits || 0}
-          subtitle="Visits completed"
+          subtitle="Finished appointments"
           icon={CheckCircle}
           gradientFrom="from-cyan-400"
           gradientTo="to-blue-500"
@@ -114,12 +118,76 @@ const PatientDashboard = () => {
           gradientTo="to-cyan-400"
         />
         <StatsCard
-          title="Upcoming Visits"
+          title="Follow-up Visits"
           value={upcomingVisits}
-          subtitle="Scheduled visits"
+          subtitle="Prescribed next visits"
           icon={Calendar}
           gradientFrom="from-cyan-500"
           gradientTo="to-green-400"
+        /> */}
+
+        <StatsCard
+          title="Total Appointments"
+          value={summary.totalAppointments}
+          subtitle="All time bookings"
+          icon={Calendar}
+          gradientFrom="from-blue-400"
+          gradientTo="to-blue-600"
+        />
+
+        <StatsCard
+          title="Scheduled Appointments"
+          value={summary.upcomingAppointments}
+          subtitle="Booked appointments"
+          icon={Clock}
+          gradientFrom="from-cyan-400"
+          gradientTo="to-cyan-600"
+        />
+
+        <StatsCard
+          title="Completed Visits"
+          value={summary.completedVisits}
+          subtitle="Finished appointments"
+          icon={CheckCircle}
+          gradientFrom="from-emerald-400"
+          gradientTo="to-emerald-600"
+        />
+
+        <StatsCard
+          title="Cancelled"
+          value={summary.cancelledAppointments}
+          subtitle="Cancelled bookings"
+          icon={XCircle}
+          gradientFrom="from-red-400"
+          gradientTo="to-red-600"
+        />
+
+        {/* Row 2 */}
+        <StatsCard
+          title="Active Prescriptions"
+          value={summary.activePrescriptions}
+          subtitle="Currently active"
+          icon={FileText}
+          gradientFrom="from-purple-400"
+          gradientTo="to-purple-600"
+        />
+
+        <StatsCard
+          title="Pending Payments"
+          value={summary.pendingPayments}
+          subtitle="Payment at clinic"
+          icon={TrendingUp}
+          gradientFrom="from-pink-400"
+          gradientTo="to-pink-600"
+        />
+
+        <StatsCard
+          title="Follow-up Visits"
+          value={upcomingFollowUpVisits}
+          subtitle="Prescribed next visits"
+          icon={ClipboardList}
+          gradientFrom="from-amber-400"
+          gradientTo="to-orange-600"
         />
       </div>
 
@@ -140,18 +208,24 @@ const PatientDashboard = () => {
           </div>
 
           {nextAppointment ? (
-            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-5 border-2 border-cyan-200">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-cyan-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                  {nextAppointment.doctorName?.charAt(0) || "D"}
-                </div>
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-xl p-5 border-2 border-cyan-400">
+              <div className="flex items-start gap-4">
                 <div className="flex-1">
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">
-                    Dr. {nextAppointment.doctorName}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {nextAppointment.doctorSpecialization || "Dentist"}
-                  </p>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">
+                        Dr. {nextAppointment.doctorName}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {nextAppointment.doctorSpecialization || "Dentist"}
+                      </p>
+                    </div>
+                    <Link to="my-appointments">
+                      <button className="w-full py-1.5 rounded-md px-2 bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 shadow-md transition-all">
+                        View Details
+                      </button>
+                    </Link>
+                  </div>
                   <div className="flex flex-wrap gap-3 text-sm">
                     <div className="flex items-center gap-1 bg-white px-3 py-1 rounded-full">
                       <Calendar className="w-4 h-4 text-cyan-600" />
@@ -170,11 +244,6 @@ const PatientDashboard = () => {
                   </div>
                 </div>
               </div>
-              <Link to="/patient/my-appointments">
-                <button className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-700 hover:to-blue-700 transition-all shadow-md">
-                  View Details
-                </button>
-              </Link>
             </div>
           ) : (
             <div className="text-center py-12">
@@ -222,8 +291,8 @@ const PatientDashboard = () => {
                         </p>
                       </div>
                     </div>
-                    <span className="px-2 py-1 bg-green-600 text-white rounded-md text-xs font-semibold">
-                      Completed
+                    <span className="px-2 py-1.5 flex justify-start items-center bg-green-600 text-white rounded-md text-xs font-semibold">
+                      <CheckCheck className="w-4 h-4 mr-1" /> Completed
                     </span>
                   </div>
                   <div className="flex items-center justify-start gap-2 text-sm">

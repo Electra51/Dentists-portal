@@ -18,11 +18,11 @@ const StatsCard = ({
           <Icon className="w-6 h-6" />
         </div>
 
-        <span className="text-3xl font-bold">{value}</span>
+        <span className="text-4xl font-bold">{value}</span>
       </div>
 
-      <h3 className="text-sm opacity-80 font-medium mb-1">{title}</h3>
-      <p className="text-xs opacity-70">{subtitle}</p>
+      <h3 className="text-xl text-white font-medium mb-1">{title}</h3>
+      <p className="text-sm text-gray-100 tracking-wider">{subtitle}</p>
     </div>
   );
 };
