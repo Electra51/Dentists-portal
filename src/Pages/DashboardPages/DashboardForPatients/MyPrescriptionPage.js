@@ -17,9 +17,9 @@ import StatsCard from "../../../Components/StatsCard";
 import PrimaryButton from "../../../Components/PrimaryButton";
 import FormattedDate from "../../../Components/FormattedDate";
 import handlePrint from "../../../Utils/handlePrint";
-import LoadingState from "../../../Components/LoadingState";
-import MessageState from "../../../Components/MessageState";
-import EmptyState from "./EmptyState";
+import LoadingState from "../../../Components/states/LoadingState";
+import MessageState from "../../../Components/states/MessageState";
+import EmptyState from "../../../Components/states/EmptyState";
 
 const MyPrescriptionPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
