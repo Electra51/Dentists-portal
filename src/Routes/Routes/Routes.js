@@ -8,7 +8,6 @@ import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/DashboardPages/ProfilePage/Profile";
 import DoctorList from "../../Pages/DoctorList/DoctorList";
-import DoctorVerification from "../../Pages/DoctorVerification/DoctorVerification";
 import Patients from "../../Pages/PatientsList/Patients";
 import About from "../../Pages/AboutPage/About";
 import Home from "../../Pages/HomePage/Home";
@@ -19,12 +18,15 @@ import AppointmentBookingPage from "../../Pages/DentistsMenuPage/AppointmentBook
 import Dashboard from "../../Pages/DashboardPages/Dashboard";
 import MyPrescriptionPage from "../../Pages/DashboardPages/DashboardForPatients/MyPrescriptionPage";
 import MyAppointmentPage from "../../Pages/DashboardPages/DashboardForPatients/MyAppointmentPage";
-import DentistsAppointmentList from "../../Pages/DashboardPages/DashboardForDentists/DentistsAppointmentList";
-import DentistsPatientsList from "../../Pages/DashboardPages/DashboardForDentists/DentistsPatientsList";
+import DentistsAppointmentList from "../../Pages/DashboardPages/DashboardForDentists/DentistsAppointments/DentistsAppointmentList";
+import DentistsPatientsList from "../../Pages/DashboardPages/DashboardForDentists/DentistsWisePatient/DentistsPatientsList";
 import DentistsPrescriptionList from "../../Pages/DashboardPages/DashboardForDentists/DentistsPrescriptionList";
 import DentistsSchedulePage from "../../Pages/DashboardPages/DashboardForDentists/DentistsSchedulePage";
 import DentistSettingsPage from "../../Pages/DashboardPages/DashboardForDentists/DentistSettingsPage";
-import AppointmentDetails from "../../Pages/DashboardPages/AppointmentDetails";
+import AppointmentDetails from "../../Pages/DashboardPages/DashboardForDentists/DentistsAppointments/AppointmentDetails";
+import PatientsDetails from "../../Pages/DashboardPages/DashboardForDentists/DentistsWisePatient/PatientsDetails";
+import DentistsVerification from "../../Pages/DashboardPages/DashboardForAdmin/DentistsVerification";
+import AllAppointments from "../../Pages/DashboardPages/DashboardForAdmin/AllAppointments";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -86,14 +88,14 @@ const router = createBrowserRouter([
         path: "",
         element: <Dashboard />,
       },
-      {
-        path: "appointments",
-        element: <DentistsAppointmentList />,
-      },
       // {
-      //   path: ":appointmentId",
-      //   element: <AppointmentDetails />,
+      //   path: "appointments",
+      //   element: <DentistsAppointmentList />,
       // },
+      {
+        path: "admin-appointments",
+        element: <AllAppointments />,
+      },
 
       {
         path: "appointments",
@@ -115,15 +117,25 @@ const router = createBrowserRouter([
 
       {
         path: "doctor-verification",
-        element: <DoctorVerification />,
+        element: <DentistsVerification />,
       },
       {
         path: "patients",
         element: <Patients />,
       },
+
       {
         path: "my-patients",
-        element: <DentistsPatientsList />,
+        children: [
+          {
+            path: "",
+            element: <DentistsPatientsList />,
+          },
+          {
+            path: ":patientId",
+            element: <PatientsDetails />,
+          },
+        ],
       },
       {
         path: "my-prescriptions",

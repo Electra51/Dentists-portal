@@ -10,12 +10,13 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-import {
-  useGetAllDoctorsQuery,
-  useApproveDoctorMutation,
-  useRejectDoctorMutation,
-} from "../../redux/api/adminApi";
+
 import toast from "react-hot-toast";
+import {
+  useApproveDoctorMutation,
+  useGetAllDoctorsQuery,
+  useRejectDoctorMutation,
+} from "../../redux/api/authApi";
 
 export default function DoctorList() {
   const [statusFilter, setStatusFilter] = useState("all");

@@ -190,10 +190,9 @@ export const adminMenuItems = [
   },
   { path: "dentists", label: "Dentists List", icon: Users },
   { path: "patients", label: "Patients Lists", icon: Activity },
-  { path: "appointments", label: "All Appointments", icon: Calendar },
+  { path: "admin-appointments", label: "All Appointments", icon: Calendar },
   { path: "payments", label: "Revenue", icon: BarChart3 },
   { path: "reports", label: "Reports", icon: FileText },
   { path: "reviews", label: "Reviews & Feedback", icon: Star },
-  { path: "settings", label: "System Settings", icon: Settings },
   { path: "profile", label: "My Profile", icon: UserCircle },
 ];

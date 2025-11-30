@@ -1,103 +1,169 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "./baseApi";
 
-export const authApi = createApi({
-  reducerPath: "authApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/api/v1/auth/",
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-
-  tagTypes: ["User"],
+export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     registerUser: builder.mutation({
       query: (userData) => ({
-        url: "register",
+        url: "/auth/register",
         method: "POST",
         body: userData,
       }),
     }),
     loginUser: builder.mutation({
       query: (loginData) => ({
-        url: "login",
+        url: "/auth/login",
         method: "POST",
         body: loginData,
       }),
     }),
-
     getUserProfile: builder.query({
-      query: () => "/profile",
+      query: () => "/auth/profile",
       providesTags: ["User"],
     }),
-
     updateUserProfile: builder.mutation({
       query: (data) => ({
-        url: "/profile",
+        url: "/auth/profile",
         method: "PUT",
         body: data,
       }),
       invalidatesTags: ["User"],
     }),
     getPendingDoctors: builder.query({
-      query: () => "/pending-doctors",
+      query: () => "/auth/pending-doctors",
       providesTags: ["PendingDoctors"],
     }),
     uploadUserImage: builder.mutation({
       query: ({ email, formData }) => ({
-        url: `/profile/upload/${email}`,
+        url: `/auth/profile/upload/${email}`,
         method: "PUT",
         body: formData,
       }),
       invalidatesTags: ["User"],
     }),
-    // Verification request endpoint
     requestVerification: builder.mutation({
       query: () => ({
-        url: "/request-verification",
+        url: "/auth/request-verification",
         method: "POST",
       }),
       invalidatesTags: ["User"],
     }),
-    // Approve doctor
     approveDoctor: builder.mutation({
       query: (doctorId) => ({
-        url: `approve-doctor/${doctorId}`,
+        url: `/auth/approve-doctor/${doctorId}`,
         method: "POST",
       }),
       invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
     }),
-
-    // Get verification status
-    getVerificationStatus: builder.query({
-      query: () => "/verification-status",
-      providesTags: ["User"],
-    }),
-
-    // Reject doctor
     rejectDoctor: builder.mutation({
       query: ({ doctorId, reason }) => ({
-        url: `/reject-doctor/${doctorId}`,
+        url: `/auth/reject-doctor/${doctorId}`,
         method: "PUT",
         body: { reason },
       }),
       invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
     }),
+    //doctor route
+    getDoctorPatients: builder.query({
+      query: ({ search = "", bloodGroup = "all" } = {}) =>
+        `/doctor/patients?search=${search}&bloodGroup=${bloodGroup}`,
+      providesTags: ["Patients"],
+    }),
+    getPatientDetailsByDoctor: builder.query({
+      query: (patientId) => `/doctor/patient/${patientId}`,
+      providesTags: ["Patients"],
+    }),
+    getDoctorSchedule: builder.query({
+      query: () => "/doctor/schedule",
+      providesTags: ["Schedule"],
+    }),
+
+    updateDoctorSchedule: builder.mutation({
+      query: (schedule) => ({
+        url: "/doctor/schedule",
+        method: "PUT",
+        body: { schedule },
+      }),
+      invalidatesTags: ["Schedule", "Profile"],
+    }),
+    getDoctorSettings: builder.query({
+      query: () => "/doctor/settings",
+      providesTags: ["Settings"],
+    }),
+
+    updateDoctorSettings: builder.mutation({
+      query: (settingsData) => ({
+        url: "/doctor/settings",
+        method: "PUT",
+        body: settingsData,
+      }),
+      invalidatesTags: ["Settings"],
+    }),
+    getAllDentists: builder.query({
+      query: ({
+        search = "",
+        specialization = "all",
+        department = "all",
+        sortBy = "rating",
+      } = {}) => {
+        const params = new URLSearchParams();
+        if (search) params.append("search", search);
+        if (specialization !== "all")
+          params.append("specialization", specialization);
+        if (department !== "all") params.append("department", department);
+        if (sortBy) params.append("sortBy", sortBy);
+        return `/doctor/public/all?${params.toString()}`;
+      },
+      providesTags: ["PublicDentists"],
+    }),
+
+    getDentistDetails: builder.query({
+      query: (dentistId) => `/doctor/public/${dentistId}`,
+      providesTags: ["PublicDentists"],
+    }),
+
+    //admin
+    getAllDoctors: builder.query({
+      query: (status = "all") => `/admin/doctors?status=${status}`,
+      providesTags: ["Doctors"],
+    }),
+    getAllPatients: builder.query({
+      query: ({ search = "", bloodGroup = "all", sortBy = "createdAt" } = {}) =>
+        `/admin/patients?search=${search}&bloodGroup=${bloodGroup}&sortBy=${sortBy}`,
+      providesTags: ["Patients"],
+    }),
+    getPatientDetails: builder.query({
+      query: (patientId) => `/admin/patient/${patientId}`,
+      providesTags: ["Patients"],
+    }),
+    deletePatient: builder.mutation({
+      query: (patientId) => ({
+        url: `/admin/patient/${patientId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Patients", "DashboardStats"],
+    }),
   }),
 });
 
 export const {
+  useGetAllPatientsQuery,
+  useGetPatientDetailsQuery,
+  useDeletePatientMutation,
+  useGetAllDoctorsQuery,
+  useGetAllDentistsQuery,
+  useGetDentistDetailsQuery,
+  useGetDoctorSettingsQuery,
+  useUpdateDoctorSettingsMutation,
+  useGetDoctorScheduleQuery,
+  useUpdateDoctorScheduleMutation,
+  useGetPatientDetailsByDoctorQuery,
+  useGetDoctorPatientsQuery,
   useRegisterUserMutation,
   useLoginUserMutation,
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
   useUploadUserImageMutation,
   useRequestVerificationMutation,
-  useGetVerificationStatusQuery,
   useApproveDoctorMutation,
   useRejectDoctorMutation,
   useGetPendingDoctorsQuery,

@@ -4,8 +4,10 @@ import React, { useState, useEffect } from "react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useCreateAppointmentMutation } from "../../redux/api/appointmentApi";
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetDentistDetailsQuery } from "../../redux/api/doctorApi";
-import { useGetUserProfileQuery } from "../../redux/api/authApi";
+import {
+  useGetDentistDetailsQuery,
+  useGetUserProfileQuery,
+} from "../../redux/api/authApi";
 import AppointmentBookingContent from "../../Components/AppointmentBookingContent";
 
 const AppointmentBookingPage = () => {

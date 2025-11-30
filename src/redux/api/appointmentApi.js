@@ -1,185 +1,151 @@
-// redux/api/appointmentApi.js
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "./baseApi";
 
-export const appointmentApi = createApi({
-  reducerPath: "appointmentApi",
-
-  baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:8080/api/v1/appointments",
-    prepareHeaders: (headers) => {
-      const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
-  tagTypes: ["Appointments"],
+export const appointmentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // get available slots for landing page
     getAvailableSlots: builder.query({
       query: ({ doctorId, date }) =>
-        `/available-slots?doctorId=${doctorId}&date=${date}`,
+        `/appointments/available-slots?doctorId=${doctorId}&date=${date}`,
     }),
 
-    // create appointment by patients
     createAppointment: builder.mutation({
       query: (appointmentData) => ({
-        url: "/create",
+        url: "/appointments/create",
         method: "POST",
         body: appointmentData,
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // get patient appointments
     getPatientAppointments: builder.query({
-      query: (status) => (status ? `/patient?status=${status}` : "/patient"),
-      providesTags: ["Appointments"],
-    }),
-    // Get archived appointments
-    getArchivedAppointments: builder.query({
-      query: () => "/doctor/archived",
+      query: (status) =>
+        status
+          ? `/appointments/patient?status=${status}`
+          : "/appointments/patient",
       providesTags: ["Appointments"],
     }),
 
-    // ==================== APPOINTMENTS ====================
+    getArchivedAppointments: builder.query({
+      query: () => "/appointments/doctor/archived",
+      providesTags: ["Appointments"],
+    }),
+
     getDoctorAppointments: builder.query({
       query: ({ date, status, search } = {}) => {
         const params = new URLSearchParams();
         if (date) params.append("date", date);
         if (status) params.append("status", status);
         if (search) params.append("search", search);
-        return `/doctor`;
+        return `/appointments/doctor`;
       },
       providesTags: ["Appointments"],
     }),
 
     getAppointmentDetails: builder.query({
-      query: (appointmentId) => `/${appointmentId}`,
+      query: (appointmentId) => `/appointments/${appointmentId}`,
       providesTags: ["Appointments"],
     }),
     deleteAppointment: builder.mutation({
       query: (appointmentId) => ({
-        url: `/appointments/${appointmentId}`,
+        url: `/appointments/appointments/${appointmentId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["Appointments"],
     }),
     updateAppointmentStatus: builder.mutation({
       query: ({ appointmentId, status }) => ({
-        url: `/${appointmentId}/status`,
+        url: `/appointments/${appointmentId}/status`,
         method: "PATCH",
         body: { status },
       }),
       invalidatesTags: ["Appointments", "Dashboard"],
     }),
 
-    // ✅ NEW: Mark payment as received (Doctor only)
     markPaymentReceived: builder.mutation({
       query: ({ appointmentId, amount, note }) => ({
-        url: `/${appointmentId}/mark-paid`,
+        url: `/appointments/${appointmentId}/mark-paid`,
         method: "PATCH",
         body: { amount, note },
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // Get single appointment details
-    // getAppointmentDetails: builder.query({
-    //   query: (appointmentId) => `/${appointmentId}`,
-    //   providesTags: ["Appointments"],
-    // }),
-
-    // ✅ NEW: Confirm appointment (Doctor)
     confirmAppointment: builder.mutation({
       query: (appointmentId) => ({
-        url: `/${appointmentId}/confirm`,
+        url: `/appointments/${appointmentId}/confirm`,
         method: "PATCH",
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // ✅ NEW: Complete appointment (Doctor)
     completeAppointment: builder.mutation({
       query: ({ appointmentId, ...data }) => ({
-        url: `/${appointmentId}/complete`,
+        url: `/appointments/${appointmentId}/complete`,
         method: "PATCH",
         body: data,
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // ✅ NEW: Mark as no-show (Doctor)
     markAsNoShow: builder.mutation({
       query: ({ appointmentId, reason }) => ({
-        url: `/${appointmentId}/no-show`,
+        url: `/appointments/${appointmentId}/no-show`,
         method: "PATCH",
         body: { reason },
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // Mark payment received
-    // markPaymentReceived: builder.mutation({
-    //   query: ({ appointmentId, amount, note }) => ({
-    //     url: `/${appointmentId}/mark-paid`,
-    //     method: "PATCH",
-    //     body: { amount, note },
-    //   }),
-    //   invalidatesTags: ["Appointments"],
-    // }),
-
-    // Cancel appointment (Patient)
     cancelAppointment: builder.mutation({
       query: ({ appointmentId, reason }) => ({
-        url: `/${appointmentId}/cancel`,
+        url: `/appointments/${appointmentId}/cancel`,
         method: "PATCH",
         body: { reason },
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // Delete appointment
-    // deleteAppointment: builder.mutation({
-    //   query: (appointmentId) => ({
-    //     url: `/${appointmentId}`,
-    //     method: "DELETE",
-    //   }),
-    //   invalidatesTags: ["Appointments"],
-    // }),
-
-    // Archive expired appointments (Manual trigger)
     archiveExpiredAppointments: builder.mutation({
       query: () => ({
-        url: "/archive-expired",
+        url: "/appointments/archive-expired",
         method: "POST",
       }),
       invalidatesTags: ["Appointments"],
     }),
 
-    // ✅ DEPRECATED: Keep for backward compatibility
-    // updateAppointmentStatus: builder.mutation({
-    //   query: ({ appointmentId, status }) => ({
-    //     url: `/${appointmentId}/status`,
-    //     method: "PATCH",
-    //     body: { status },
-    //   }),
-    //   invalidatesTags: ["Appointments"],
-    // }),
+    getAllAppointments: builder.query({
+      query: ({
+        status = "all",
+        date = "",
+        startDate = "",
+        endDate = "",
+        doctorId = "all",
+        patientId = "all",
+      } = {}) => {
+        const params = new URLSearchParams();
+        if (status !== "all") params.append("status", status);
+        if (date) params.append("date", date);
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        if (doctorId !== "all") params.append("doctorId", doctorId);
+        if (patientId !== "all") params.append("patientId", patientId);
+        return `/appointments/admin-appointments`;
+      },
+      providesTags: ["Appointment"],
+    }),
+
+    deleteArchivedAppointment: builder.mutation({
+      query: (appointmentId) => ({
+        url: `/admin/appointment/${appointmentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Appointment", "Dashboard"],
+    }),
   }),
 });
 
 export const {
-  // useGetAvailableSlotsQuery,
-  // useCreateAppointmentMutation,
-  // useGetPatientAppointmentsQuery,
-  // useGetDoctorAppointmentsQuery,
-  // useGetAppointmentDetailsQuery,
-  // useUpdateAppointmentStatusMutation,
-  // useMarkPaymentReceivedMutation,
-  // useDeleteAppointmentMutation,
-
+  useGetAllAppointmentsQuery,
+  useDeleteArchivedAppointmentMutation,
   useGetAvailableSlotsQuery,
   useCreateAppointmentMutation,
   useGetPatientAppointmentsQuery,
@@ -193,5 +159,5 @@ export const {
   useCancelAppointmentMutation,
   useDeleteAppointmentMutation,
   useArchiveExpiredAppointmentsMutation,
-  useUpdateAppointmentStatusMutation, // Deprecated
+  useUpdateAppointmentStatusMutation,
 } = appointmentApi;

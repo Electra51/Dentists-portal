@@ -17,8 +17,8 @@ import {
   Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useGetDentistDetailsQuery } from "../../redux/api/doctorApi";
 import { useParams } from "react-router-dom";
+import { useGetDentistDetailsQuery } from "../../redux/api/authApi";
 
 const DentistDetailsPage = () => {
   const { dentistId } = useParams();

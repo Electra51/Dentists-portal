@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Users, Loader2, Sparkles, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useGetAllDentistsQuery } from "../../redux/api/doctorApi";
 import DentistCard from "../../Components/DentistCard";
 import PageHeader from "../../Components/PageHeader";
 import appointmentBg from "../../assets/images/appointment.png";
 import PrimaryButton from "../../Components/PrimaryButton";
+import { useGetAllDentistsQuery } from "../../redux/api/authApi";
 // Dentists List Page
 const DentistsPage = () => {
   const navigate = useNavigate();

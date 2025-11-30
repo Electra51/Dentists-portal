@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Bell, DollarSign, Clock, Save, Loader2, Settings } from "lucide-react";
 
 import toast from "react-hot-toast";
+
+import DashboardHeader from "../../../Components/DashboardHeader";
+import LoadingState from "../../../Components/states/LoadingState";
 import {
   useGetDoctorSettingsQuery,
   useUpdateDoctorSettingsMutation,
-} from "../../../redux/api/doctorApi";
-import DashboardHeader from "../../../Components/DashboardHeader";
-import LoadingState from "../../../Components/states/LoadingState";
+} from "../../../redux/api/authApi";
 
 const DentistSettingsPage = () => {
   const { data: settingsData, isLoading: fetchingSettings } =

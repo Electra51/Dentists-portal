@@ -9,12 +9,13 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+
+import toast from "react-hot-toast";
+import DashboardHeader from "../../../Components/DashboardHeader";
 import {
   useGetDoctorScheduleQuery,
   useUpdateDoctorScheduleMutation,
-} from "../../../redux/api/doctorApi";
-import toast from "react-hot-toast";
-import DashboardHeader from "../../../Components/DashboardHeader";
+} from "../../../redux/api/authApi";
 
 const DAYS_OF_WEEK = [
   { key: "sunday", label: "Sunday" },

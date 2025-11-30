@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Calendar, User, FileText, Loader2 } from "lucide-react";
-import { useCreatePrescriptionMutation } from "../../../redux/api/prescriptionApi";
+import { useCreatePrescriptionMutation } from "../../../../redux/api/prescriptionApi";
 import toast from "react-hot-toast";
 
 const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
-  console.log("ooo");
-
   const [formData, setFormData] = useState({
     patientName: "",
     patientId: "",
@@ -25,10 +23,8 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
     diagnosis: "",
   });
 
-  // ✅ Redux API Hook
   const [createPrescription, { isLoading }] = useCreatePrescriptionMutation();
 
-  // Auto-fill patient data when component mounts or patientData changes
   useEffect(() => {
     if (patientData) {
       setFormData((prev) => ({
@@ -83,37 +79,28 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
     });
   };
 
-  // ✅ Handle Submit with API Call
   const handleSubmit = async () => {
     try {
-      // Validate: at least one medicine should be filled
       const validMedicines = formData.medicines.filter(
         (med) => med.medicineName && med.dosage && med.frequency && med.duration
       );
-
       if (validMedicines.length === 0) {
         toast.error("Please fill in at least one complete medicine entry");
         return;
       }
-
-      // Prepare data for API (remove 'id' field from medicines)
       const prescriptionData = {
         patientId: formData.patientId,
         patientName: formData.patientName,
         appointmentId: formData.appointmentId,
-        medicines: validMedicines.map(({ id, ...rest }) => rest), // Remove 'id' field
+        medicines: validMedicines.map(({ id, ...rest }) => rest),
         generalInstructions: formData.generalInstructions || "",
         nextVisit: formData.nextVisit || null,
         diagnosis: formData.diagnosis || "",
       };
 
-      // ✅ Call API
       const response = await createPrescription(prescriptionData).unwrap();
-
-      // Success
       toast.success("Prescription created successfully!");
 
-      // Reset form
       setFormData({
         patientName: "",
         patientId: "",
@@ -133,12 +120,10 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         diagnosis: "",
       });
 
-      // Call success callback if provided
       if (onSuccess) {
         onSuccess(response.data);
       }
 
-      // Close modal/form
       if (onCancel) {
         onCancel();
       }
@@ -150,7 +135,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
 
   return (
     <div className="space-y-6">
-      {/* Patient Info Section - Read Only */}
       <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-200">
         <h3 className="text-sm font-semibold text-purple-900 mb-3 flex items-center gap-2">
           <User className="w-4 h-4" />
@@ -176,7 +160,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         </div>
       </div>
 
-      {/* Diagnosis Section (Optional) */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Diagnosis (Optional)
@@ -190,7 +173,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         />
       </div>
 
-      {/* Medicines Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
@@ -336,7 +318,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         ))}
       </div>
 
-      {/* General Instructions */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           General Instructions (Optional)
@@ -353,7 +334,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         />
       </div>
 
-      {/* Next Visit Date */}
       <div>
         <label className="flex text-sm font-medium text-gray-700 mb-1 items-center gap-2">
           <Calendar className="w-4 h-4" />
@@ -369,7 +349,6 @@ const PrescriptionForm = ({ onCancel, patientData, onSuccess }) => {
         />
       </div>
 
-      {/* Action Buttons */}
       <div className="flex gap-3 pt-4 border-t border-gray-200">
         <button
           type="button"

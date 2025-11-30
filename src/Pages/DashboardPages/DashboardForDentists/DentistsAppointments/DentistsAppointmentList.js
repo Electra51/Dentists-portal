@@ -11,7 +11,6 @@ import {
   XCircle,
   Eye,
   FileText,
-  TrendingUp,
   DollarSign,
   Activity,
   MessageSquare,
@@ -24,25 +23,24 @@ import {
 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import LoadingState from "../../../Components/states/LoadingState";
-import FormattedDate from "../../../Components/DateTimeFormate/FormattedDate";
-import DashboardHeader from "../../../Components/DashboardHeader";
-import StatsCard from "../../../Components/StatsCard";
-import EmptyState from "../../../Components/states/EmptyState";
+import LoadingState from "../../../../Components/states/LoadingState";
+import FormattedDate from "../../../../Components/DateTimeFormate/FormattedDate";
+import DashboardHeader from "../../../../Components/DashboardHeader";
+import EmptyState from "../../../../Components/states/EmptyState";
 import {
   useGetDoctorAppointmentsQuery,
   useConfirmAppointmentMutation,
   useMarkAsNoShowMutation,
   useDeleteAppointmentMutation,
   useArchiveExpiredAppointmentsMutation,
-} from "../../../redux/api/appointmentApi";
-import getStatusBadge from "../../../Components/Badge/getStatusBadge";
-import getPaymentBadge from "../../../Components/Badge/getPaymentBadge";
+} from "../../../../redux/api/appointmentApi";
+import getStatusBadge from "../../../../Components/Badge/getStatusBadge";
+import getPaymentBadge from "../../../../Components/Badge/getPaymentBadge";
 import { Link } from "react-router-dom";
-import Avatar from "../../../Components/Avatar/Avatar";
-import PrimaryButton from "../../../Components/PrimaryButton";
-import { getHoursPassed } from "../../../Utils/getHoursPassed";
-import { isAppointmentExpired } from "../../../Utils/isAppointmentExpired";
+import Avatar from "../../../../Components/Avatar/Avatar";
+import PrimaryButton from "../../../../Components/PrimaryButton";
+import { getHoursPassed } from "../../../../Utils/getHoursPassed";
+import { isAppointmentExpired } from "../../../../Utils/isAppointmentExpired";
 
 export default function DentistsAppointmentList() {
   const [activeTab, setActiveTab] = useState("today");
@@ -286,46 +284,7 @@ export default function DentistsAppointmentList() {
         title="Appointments Management"
         subtitle="View and manage all your dental appointments efficiently"
       />
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatsCard
-          title="Today's Appointments"
-          value={statistics.todayCount}
-          subtitle={`${statistics.confirmedToday} confirmed`}
-          icon={Calendar}
-          gradientFrom="from-cyan-500"
-          gradientTo="to-green-400"
-        />
 
-        <StatsCard
-          title="Follow-ups Scheduled"
-          value={statistics.followUps}
-          subtitle="Upcoming visits"
-          icon={RotateCcw}
-          gradientFrom="from-purple-400"
-          gradientTo="to-purple-600"
-        />
-
-        <StatsCard
-          title="Total Revenue"
-          value={statistics.totalRevenue}
-          subtitle={`${statistics.paidCount} paid appointments`}
-          icon={DollarSign}
-          gradientFrom="from-blue-400"
-          gradientTo="to-cyan-300"
-        />
-
-        <StatsCard
-          title="Pending Revenue"
-          value={statistics.pendingRevenue}
-          subtitle={`${statistics.unpaidCount} unpaid`}
-          icon={TrendingUp}
-          gradientFrom="from-orange-300"
-          gradientTo="to-orange-400"
-        />
-      </div>
-
-      {/* Tabs */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
         <div className="flex border-b border-gray-200">
           <button
@@ -377,7 +336,6 @@ export default function DentistsAppointmentList() {
           </button>
         </div>
 
-        {/* Filters */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="relative">
@@ -457,7 +415,6 @@ export default function DentistsAppointmentList() {
         </div>
       </div>
 
-      {/* Appointments List */}
       <div className="space-y-4">
         {filteredAppointments.length === 0 ? (
           <EmptyState
@@ -515,7 +472,6 @@ export default function DentistsAppointmentList() {
                     ? "border-red-300 ring-2 ring-red-100"
                     : "border-gray-200"
                 }`}>
-                {/* TIME OVER WARNING BANNER */}
                 {showTimeOverWarning && appointment.status !== "completed" && (
                   <div
                     className={`${
@@ -533,7 +489,6 @@ export default function DentistsAppointmentList() {
 
                 <div className="p-6">
                   <div className="flex flex-col lg:flex-row items-start gap-4">
-                    {/* Patient Info */}
                     <div className="flex items-start gap-4 flex-1 w-full">
                       <div>
                         {appointment.patientId?.profileImage ? (
@@ -562,7 +517,6 @@ export default function DentistsAppointmentList() {
                           {getStatusBadge(appointment.status)}
                         </div>
 
-                        {/* Contact Info Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mb-4">
                           <div className="flex items-center gap-2 text-gray-600">
                             <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -593,7 +547,6 @@ export default function DentistsAppointmentList() {
                           </div>
                         </div>
 
-                        {/* Service & Fee */}
                         <div className="flex flex-wrap items-center gap-3 mb-3">
                           <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
                             <FileText className="w-4 h-4" />
@@ -609,7 +562,6 @@ export default function DentistsAppointmentList() {
                           )}
                         </div>
 
-                        {/* Patient Notes */}
                         {appointment.patientNotes && (
                           <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                             <p className="text-sm text-blue-900">
@@ -624,10 +576,7 @@ export default function DentistsAppointmentList() {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
                     <div className="flex flex-col gap-2 lg:ml-4 w-full lg:w-auto lg:min-w-[200px]">
-                      {/* Confirm Button */}
-                      {/* Confirm Button - Only show if time NOT over */}
                       {appointment.status === "scheduled" &&
                         !showTimeOverWarning && (
                           <button
@@ -639,7 +588,6 @@ export default function DentistsAppointmentList() {
                           </button>
                         )}
 
-                      {/* Archive Button - Show when time is over */}
                       {appointment.status === "scheduled" &&
                         showTimeOverWarning && (
                           <button
@@ -651,7 +599,6 @@ export default function DentistsAppointmentList() {
                           </button>
                         )}
 
-                      {/* Mark as No-Show */}
                       {appointment.status === "confirmed" && (
                         <button
                           onClick={() => handleNoShow(appointment._id)}
@@ -662,7 +609,6 @@ export default function DentistsAppointmentList() {
                         </button>
                       )}
 
-                      {/* View Details */}
                       <Link to={`${appointment._id}`}>
                         <PrimaryButton className="w-full">
                           <Eye className="w-4 h-4 mr-2" />
@@ -670,7 +616,6 @@ export default function DentistsAppointmentList() {
                         </PrimaryButton>
                       </Link>
 
-                      {/* Delete Button */}
                       {canDelete && (
                         <button
                           onClick={() =>

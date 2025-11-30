@@ -18,9 +18,12 @@ import {
   useApproveDoctorMutation,
   useGetPendingDoctorsQuery,
   useRejectDoctorMutation,
-} from "../../redux/api/authApi";
+} from "../../../redux/api/authApi";
+import LoadingState from "../../../Components/states/LoadingState";
+import DashboardHeader from "../../../Components/DashboardHeader";
+import EmptyState from "../../../Components/states/EmptyState";
 
-export default function DoctorVerification() {
+export default function DentistsVerification() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
@@ -85,9 +88,11 @@ export default function DoctorVerification() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
-      </div>
+      <LoadingState
+        message="Loading..."
+        spinnerColor="border-[#5ecdc9]"
+        height={"min-h-screen"}
+      />
     );
   }
 
@@ -95,15 +100,12 @@ export default function DoctorVerification() {
     <div className="max-w-7xl mx-auto p-6">
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <UserCheck className="w-8 h-8 text-cyan-500" />
-              Doctor Verification Requests
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Review and approve doctor registration requests
-            </p>
-          </div>
+          <DashboardHeader
+            icon={UserCheck}
+            title="Dentists Verification Requests"
+            subtitle="Review and approve doctor registration requests"
+          />
+
           <div className="bg-cyan-50 px-4 py-2 rounded-lg">
             <p className="text-sm text-gray-600">Pending Requests</p>
             <p className="text-2xl font-bold text-cyan-600">
@@ -125,19 +127,17 @@ export default function DoctorVerification() {
       </div>
 
       {filteredDoctors.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <Clock className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            No Pending Requests
-          </h3>
-          <p className="text-gray-600">
-            {searchQuery
-              ? "No doctors found matching your search"
-              : "All verification requests have been processed"}
-          </p>
-        </div>
+        <EmptyState
+          icon={FileText}
+          title="No Prescriptions Found"
+          message={
+            searchQuery
+              ? "No dentists found matching your search"
+              : "All verification requests have been processed"
+          }
+        />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[1440px] mx-auto">
           {filteredDoctors.map((doctor) => (
             <div
               key={doctor._id}

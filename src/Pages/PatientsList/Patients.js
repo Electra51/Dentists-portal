@@ -2,11 +2,12 @@
 // pages/Admin/Patients.jsx
 import React, { useState } from "react";
 import { Users, Search, Loader2, Trash2 } from "lucide-react";
-import {
-  useGetAllPatientsQuery,
-  useDeletePatientMutation,
-} from "../../redux/api/adminApi";
+
 import toast from "react-hot-toast";
+import {
+  useDeletePatientMutation,
+  useGetAllPatientsQuery,
+} from "../../redux/api/authApi";
 
 export default function Patients() {
   const [searchQuery, setSearchQuery] = useState("");
