@@ -23,6 +23,7 @@ import { Modal } from "../../../Components/Modal";
 import PrescriptionForm from "./PrescriptionForm";
 import toast from "react-hot-toast";
 import DashboardHeader from "../../../Components/DashboardHeader";
+import StatsCard from "../../../Components/StatsCard";
 
 export default function DentistsPatientsList() {
   const navigate = useNavigate();
@@ -81,57 +82,43 @@ export default function DentistsPatientsList() {
         title="Patients List"
         subtitle="Manage your patients and view details"
       />
-      {/* Statistics Cards */}
+      {/* State Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 p-4 rounded-xl border border-cyan-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-cyan-700 font-medium">
-                Total Patients
-              </p>
-              <p className="text-2xl font-bold text-cyan-900">{stats.total}</p>
-            </div>
-            <Users className="w-8 h-8 text-cyan-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Total Patients"
+          value={stats.total}
+          // subtitle={`${statistics.confirmedToday} confirmed`}
+          icon={Calendar}
+          gradientFrom="from-cyan-500"
+          gradientTo="to-green-400"
+        />
 
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-blue-700 font-medium">Recent Visits</p>
-              <p className="text-2xl font-bold text-blue-900">
-                {stats.recentVisits}
-              </p>
-            </div>
-            <TrendingUp className="w-8 h-8 text-blue-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Recent Visits"
+          value={stats.recentVisits}
+          subtitle="Upcoming visits"
+          icon={TrendingUp}
+          gradientFrom="from-purple-400"
+          gradientTo="to-purple-600"
+        />
 
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-orange-700 font-medium">
-                With Allergies
-              </p>
-              <p className="text-2xl font-bold text-orange-900">
-                {stats.withAllergies}
-              </p>
-            </div>
-            <AlertCircle className="w-8 h-8 text-orange-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="With Allergies"
+          value={stats.withAllergies}
+          // subtitle={`${statistics.paidCount} paid appointments`}
+          icon={AlertCircle}
+          gradientFrom="from-blue-400"
+          gradientTo="to-cyan-300"
+        />
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-red-700 font-medium">Chronic Cases</p>
-              <p className="text-2xl font-bold text-red-900">
-                {stats.chronicPatients}
-              </p>
-            </div>
-            <Activity className="w-8 h-8 text-red-500" />
-          </div>
-        </div>
+        <StatsCard
+          title="Chronic Cases"
+          value={stats.chronicPatients}
+          subtitle={`${stats.chronicPatients} unpaid`}
+          icon={Activity}
+          gradientFrom="from-orange-300"
+          gradientTo="to-orange-400"
+        />
       </div>
 
       {/* Filters */}
@@ -174,7 +161,7 @@ export default function DentistsPatientsList() {
       </div>
 
       {/* Patients Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 mt-6">
         <table className="w-full">
           <thead className="bg-gradient-to-r from-cyan-50 to-blue-50">
             <tr>

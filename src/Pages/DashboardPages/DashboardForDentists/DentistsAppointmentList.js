@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-undef */
 import React, { useState, useMemo } from "react";
 import {
   Calendar,
@@ -10,24 +9,21 @@ import {
   Mail,
   CheckCircle,
   XCircle,
-  AlertCircle,
   Eye,
   FileText,
-  Timer,
   TrendingUp,
   DollarSign,
   Activity,
   MessageSquare,
-  AlertTriangle,
   Download,
-  Plus,
   CalendarCheck,
+  Trash2,
+  RotateCcw,
+  Archive,
+  AlertTriangle,
 } from "lucide-react";
 
 import toast from "react-hot-toast";
-import { Modal } from "../../../Components/Modal";
-import PaymentModal from "./PaymentModal";
-import PrescriptionForm from "./PrescriptionForm";
 import LoadingState from "../../../Components/states/LoadingState";
 import FormattedDate from "../../../Components/DateTimeFormate/FormattedDate";
 import DashboardHeader from "../../../Components/DashboardHeader";
@@ -35,78 +31,153 @@ import StatsCard from "../../../Components/StatsCard";
 import EmptyState from "../../../Components/states/EmptyState";
 import {
   useGetDoctorAppointmentsQuery,
-  useMarkPaymentReceivedMutation,
-  useUpdateAppointmentStatusMutation,
+  useConfirmAppointmentMutation,
+  useMarkAsNoShowMutation,
+  useDeleteAppointmentMutation,
+  useArchiveExpiredAppointmentsMutation,
 } from "../../../redux/api/appointmentApi";
+import getStatusBadge from "../../../Components/Badge/getStatusBadge";
+import getPaymentBadge from "../../../Components/Badge/getPaymentBadge";
+import { Link } from "react-router-dom";
+import Avatar from "../../../Components/Avatar/Avatar";
+import PrimaryButton from "../../../Components/PrimaryButton";
+import { getHoursPassed } from "../../../Utils/getHoursPassed";
+import { isAppointmentExpired } from "../../../Utils/isAppointmentExpired";
 
 export default function DentistsAppointmentList() {
+  const [activeTab, setActiveTab] = useState("today");
   const [selectedDate, setSelectedDate] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [paymentFilter, setPaymentFilter] = useState("all");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [selectedPaymentAppointment, setSelectedPaymentAppointment] =
-    useState(null);
 
   const { data, isLoading, refetch } = useGetDoctorAppointmentsQuery({
     date: selectedDate,
     status: statusFilter === "all" ? "" : statusFilter,
-    search: searchTerm,
   });
 
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateAppointmentStatusMutation();
-
-  const [markPayment, { isLoading: isMarkingPayment }] =
-    useMarkPaymentReceivedMutation();
-
+  const [confirmAppointment, { isLoading: isConfirming }] =
+    useConfirmAppointmentMutation();
+  const [markAsNoShow, { isLoading: isMarkingNoShow }] =
+    useMarkAsNoShowMutation();
+  const [deleteAppointment, { isLoading: isDeleting }] =
+    useDeleteAppointmentMutation();
+  const [archiveAppointment, { isLoading: isArchiving }] =
+    useArchiveExpiredAppointmentsMutation();
   const appointments = data?.data || [];
 
-  const handleOpenPaymentModal = (appointment) => {
-    setSelectedPaymentAppointment(appointment);
-    setIsPaymentModalOpen(true);
-  };
+  // Handler: Archive appointment
+  const handleArchive = async (appointmentId) => {
+    if (!window.confirm("Are you sure you want to archive this appointment?")) {
+      return;
+    }
 
-  const handleMarkAsPaid = async (appointmentId, amount, note) => {
     try {
-      await markPayment({ appointmentId, amount, note }).unwrap();
-      toast.success("Payment marked as received!");
-      setIsPaymentModalOpen(false);
-      setSelectedPaymentAppointment(null);
+      await archiveAppointment(appointmentId).unwrap();
+      toast.success("Appointment archived successfully");
       refetch();
     } catch (error) {
-      console.error("Payment update error:", error);
-      toast.error(error?.data?.message || "Failed to update payment");
+      toast.error(error?.data?.message || "Failed to archive appointment");
     }
   };
 
-  const handlePrescriptionSuccess = (prescriptionData) => {
-    console.log("Prescription created:", prescriptionData);
-    toast.success("Prescription created successfully!");
-  };
-
-  const handleOpenPrescriptionModal = (appointment) => {
-    setSelectedAppointment(appointment);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedAppointment(null);
-  };
-
-  const statistics = useMemo(() => {
+  // Filter appointments by active tab
+  const filteredByTab = useMemo(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    if (activeTab === "today") {
+      return appointments.filter((apt) => {
+        const aptDate = new Date(apt.appointmentDate);
+        aptDate.setHours(0, 0, 0, 0);
+        const isToday = aptDate.getTime() === today.getTime();
+        const isActiveStatus = ["scheduled", "confirmed"].includes(apt.status);
+        return isToday && isActiveStatus;
+      });
+    } else if (activeTab === "followup") {
+      return appointments.filter((apt) => {
+        const hasPrescription =
+          apt.prescription !== null && apt.prescription !== undefined;
+        const hasNextVisit = hasPrescription && apt.prescription.nextVisit;
+
+        return hasNextVisit;
+      });
+    } else if (activeTab === "archived") {
+      return appointments.filter((apt) => {
+        if (apt.status === "no-show" || apt.status === "archived") return true;
+
+        const isExpired = isAppointmentExpired(
+          apt.appointmentDate,
+          apt.appointmentTime
+        );
+        return apt.status === "cancelled" && isExpired;
+      });
+    }
+    return appointments;
+  }, [appointments, activeTab]);
+
+  // Apply search and payment filters
+  const filteredAppointments = useMemo(() => {
+    return filteredByTab.filter((apt) => {
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        const nameMatch = apt.patientInfo.name
+          ?.toLowerCase()
+          .includes(searchLower);
+        const emailMatch = apt.patientId?.email
+          ?.toLowerCase()
+          .includes(searchLower);
+        const phoneMatch = apt.patientInfo.phone?.includes(searchTerm);
+        if (!nameMatch && !emailMatch && !phoneMatch) return false;
+      }
+
+      if (paymentFilter === "paid" && apt.payment.paymentStatus !== "paid")
+        return false;
+      if (
+        paymentFilter === "pending" &&
+        apt.payment.paymentStatus !== "pending"
+      )
+        return false;
+
+      return true;
+    });
+  }, [filteredByTab, searchTerm, paymentFilter]);
+
+  // Calculate statistics
+  const statistics = useMemo(() => {
+    const today = new Date();
+    const todayDateString = today.toLocaleDateString("en-CA");
+
     const todayAppointments = appointments.filter((apt) => {
       const aptDate = new Date(apt.appointmentDate);
-      aptDate.setHours(0, 0, 0, 0);
-      return aptDate.getTime() === today.getTime();
+      const aptDateString = aptDate.toLocaleDateString("en-CA");
+
+      const isToday = aptDateString === todayDateString;
+      const isActiveStatus = ["scheduled", "confirmed"].includes(apt.status);
+
+      const isExpired = isAppointmentExpired(
+        apt.appointmentDate,
+        apt.appointmentTime
+      );
+
+      return isToday && isActiveStatus && !isExpired;
     });
+
+    const confirmedToday = todayAppointments.filter(
+      (apt) => apt.status === "confirmed"
+    ).length;
+
+    // const followUps = appointments.filter(
+    //   (apt) => apt.status === "follow-up"
+    // ).length;
+
+    const followUps = appointments.filter((apt) => {
+      const hasPrescription =
+        apt.prescription !== null && apt.prescription !== undefined;
+      const hasNextVisit = hasPrescription && apt.prescription.nextVisit;
+
+      return hasNextVisit;
+    }).length;
 
     const totalRevenue = appointments
       .filter((apt) => apt.payment.paymentStatus === "paid")
@@ -116,130 +187,94 @@ export default function DentistsAppointmentList() {
       .filter((apt) => apt.payment.paymentStatus === "pending")
       .reduce((sum, apt) => sum + apt.payment.consultationFee, 0);
 
+    const archivedCount = appointments.filter((apt) => {
+      if (apt.status === "no-show" || apt.status === "archived") return true;
+
+      const isExpired = isAppointmentExpired(
+        apt.appointmentDate,
+        apt.appointmentTime
+      );
+
+      if (["scheduled", "confirmed"].includes(apt.status) && isExpired) {
+        return true;
+      }
+
+      return apt.status === "cancelled" && isExpired;
+    }).length;
+
     return {
-      total: appointments.length,
-      today: todayAppointments.length,
-      pending: appointments.filter((apt) => apt.status === "pending").length,
-      confirmed: appointments.filter((apt) => apt.status === "confirmed")
-        .length,
-      completed: appointments.filter((apt) => apt.status === "completed")
-        .length,
-      cancelled: appointments.filter((apt) => apt.status === "cancelled")
-        .length,
+      todayCount: todayAppointments.length,
+      confirmedToday,
+      followUps,
       totalRevenue,
       pendingRevenue,
-      paidAppointments: appointments.filter(
+      archivedCount,
+      paidCount: appointments.filter(
         (apt) => apt.payment.paymentStatus === "paid"
+      ).length,
+      unpaidCount: appointments.filter(
+        (apt) => apt.payment.paymentStatus === "pending"
       ).length,
     };
   }, [appointments]);
 
-  const today = new Date().toISOString().split("T")[0];
+  // Handler: Confirm appointment
+  const handleConfirm = async (appointmentId) => {
+    if (!window.confirm("Are you sure you want to confirm this appointment?")) {
+      return;
+    }
 
-  const handleStatusUpdate = async (appointmentId, newStatus) => {
+    try {
+      await confirmAppointment(appointmentId).unwrap();
+      toast.success("Appointment confirmed successfully");
+      refetch();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to confirm appointment");
+    }
+  };
+
+  // Handler: Mark as no-show
+  const handleNoShow = async (appointmentId) => {
+    const reason = window.prompt(
+      "Reason for no-show (optional):",
+      "Patient did not show up"
+    );
+    if (reason === null) return;
+
+    try {
+      await markAsNoShow({ appointmentId, reason }).unwrap();
+      toast.success("Appointment marked as no-show");
+      refetch();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to mark as no-show");
+    }
+  };
+
+  // Handler: Delete appointment
+  const handleDelete = async (appointmentId, patientName) => {
     if (
-      !window.confirm(`Are you sure you want to ${newStatus} this appointment?`)
+      !window.confirm(
+        `Are you sure you want to permanently delete ${patientName}'s appointment? This action cannot be undone.`
+      )
     ) {
       return;
     }
 
     try {
-      await updateStatus({ appointmentId, status: newStatus }).unwrap();
-      toast.success(`Appointment ${newStatus} successfully`);
+      await deleteAppointment(appointmentId).unwrap();
+      toast.success("Appointment deleted successfully");
       refetch();
-      setSelectedAppointment(null);
     } catch (error) {
-      toast.error(`Failed to ${newStatus} appointment`);
+      toast.error(error?.data?.message || "Failed to delete appointment");
     }
   };
-
-  const getStatusBadge = (status) => {
-    const badges = {
-      pending: {
-        bg: "bg-yellow-100",
-        text: "text-yellow-700",
-        icon: <AlertCircle className="w-4 h-4" />,
-        label: "Pending",
-      },
-      scheduled: {
-        bg: "bg-blue-100 border-blue-200",
-        text: "text-blue-700",
-        icon: <Timer className="w-4 h-4" />,
-        label: "Scheduled",
-      },
-      confirmed: {
-        bg: "bg-cyan-100",
-        text: "text-cyan-700",
-        icon: <CheckCircle className="w-4 h-4" />,
-        label: "Confirmed",
-      },
-      completed: {
-        bg: "bg-green-100",
-        text: "text-green-700",
-        icon: <CheckCircle className="w-4 h-4" />,
-        label: "Completed",
-      },
-      cancelled: {
-        bg: "bg-red-100",
-        text: "text-red-700",
-        icon: <XCircle className="w-4 h-4" />,
-        label: "Cancelled",
-      },
-      "no-show": {
-        bg: "bg-gray-100",
-        text: "text-gray-700",
-        icon: <XCircle className="w-4 h-4" />,
-        label: "No Show",
-      },
-    };
-
-    const badge = badges[status] || badges.pending;
-
-    return (
-      <span
-        className={`px-3 py-1 ${badge.bg} ${badge.text} rounded-full text-sm font-medium flex items-center gap-1 w-fit`}>
-        {badge.icon}
-        {badge.label}
-      </span>
-    );
-  };
-
-  const getPaymentBadge = (paymentStatus, paymentMethod) => {
-    if (paymentStatus === "paid") {
-      return (
-        <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />
-          Paid ({paymentMethod})
-        </span>
-      );
-    }
-    return (
-      <span className="px-2.5 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium flex items-center gap-1">
-        <AlertTriangle className="w-3 h-3" />
-        Pending
-      </span>
-    );
-  };
-
-  const filteredAppointments = useMemo(() => {
-    return appointments.filter((apt) => {
-      if (paymentFilter === "paid" && apt.payment.paymentStatus !== "paid")
-        return false;
-      if (
-        paymentFilter === "pending" &&
-        apt.payment.paymentStatus !== "pending"
-      )
-        return false;
-      return true;
-    });
-  }, [appointments, paymentFilter]);
 
   if (isLoading) {
     return (
       <LoadingState
-        message="Loading all appointments..."
+        message="Loading appointments..."
         spinnerColor="border-[#5ecdc9]"
-        height={"min-h-screen"}
+        height="min-h-screen"
       />
     );
   }
@@ -248,337 +283,416 @@ export default function DentistsAppointmentList() {
     <div className="min-h-screen max-w-[1440px] mx-auto p-5 md:p-7">
       <DashboardHeader
         icon={CalendarCheck}
-        title="Appointments List"
+        title="Appointments Management"
         subtitle="View and manage all your dental appointments efficiently"
       />
-
-      {/* stats */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatsCard
           title="Today's Appointments"
-          value={statistics.today}
-          subtitle={`${statistics.confirmed} confirmed`}
+          value={statistics.todayCount}
+          subtitle={`${statistics.confirmedToday} confirmed`}
           icon={Calendar}
           gradientFrom="from-cyan-500"
           gradientTo="to-green-400"
         />
 
         <StatsCard
-          title="Pending"
-          value={statistics.pending}
-          subtitle="Awaiting confirmation"
-          icon={AlertCircle}
-          gradientFrom="from-yellow-200"
-          gradientTo="to-yellow-400"
+          title="Follow-ups Scheduled"
+          value={statistics.followUps}
+          subtitle="Upcoming visits"
+          icon={RotateCcw}
+          gradientFrom="from-purple-400"
+          gradientTo="to-purple-600"
         />
 
         <StatsCard
           title="Total Revenue"
           value={statistics.totalRevenue}
-          subtitle={`${statistics.paidAppointments} paid appointments`}
+          subtitle={`${statistics.paidCount} paid appointments`}
           icon={DollarSign}
           gradientFrom="from-blue-400"
           gradientTo="to-cyan-300"
         />
+
         <StatsCard
           title="Pending Revenue"
           value={statistics.pendingRevenue}
-          subtitle={`${
-            appointments.length - statistics.paidAppointments
-          } unpaid`}
+          subtitle={`${statistics.unpaidCount} unpaid`}
           icon={TrendingUp}
           gradientFrom="from-orange-300"
           gradientTo="to-orange-400"
         />
       </div>
 
-      {/* filters */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="text"
-              placeholder="Search patient..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
+      {/* Tabs */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div className="flex border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab("today")}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
+              activeTab === "today"
+                ? "text-cyan-600 border-b-2 border-cyan-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}>
+            <Calendar className="w-5 h-5" />
+            Today's Appointments
+            {statistics.todayCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-cyan-100 text-cyan-700 rounded-full">
+                {statistics.todayCount}
+              </span>
+            )}
+          </button>
 
-          <div className="relative">
-            <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
+          <button
+            onClick={() => setActiveTab("followup")}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
+              activeTab === "followup"
+                ? "text-purple-600 border-b-2 border-purple-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}>
+            <RotateCcw className="w-5 h-5" />
+            Follow-ups
+            {statistics.followUps > 0 && (
+              <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-purple-100 text-purple-700 rounded-full">
+                {statistics.followUps}
+              </span>
+            )}
+          </button>
 
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent appearance-none">
-              <option value="all">All Status</option>
-              <option value="pending">Pending</option>
-              <option value="scheduled">Scheduled</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="completed">Completed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="no-show">No Show</option>
-            </select>
-          </div>
-
-          <div className="relative">
-            <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <select
-              value={paymentFilter}
-              onChange={(e) => setPaymentFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent appearance-none">
-              <option value="all">All Payments</option>
-              <option value="paid">Paid Only</option>
-              <option value="pending">Pending Only</option>
-            </select>
-          </div>
+          <button
+            onClick={() => setActiveTab("archived")}
+            className={`flex items-center gap-2 px-6 py-4 font-medium transition-colors relative ${
+              activeTab === "archived"
+                ? "text-gray-600 border-b-2 border-gray-600"
+                : "text-gray-600 hover:text-gray-900"
+            }`}>
+            <Archive className="w-5 h-5" />
+            Archived
+            {statistics.archivedCount > 0 && (
+              <span className="ml-2 px-2 py-0.5 text-xs font-bold bg-gray-200 text-gray-700 rounded-full">
+                {statistics.archivedCount}
+              </span>
+            )}
+          </button>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-200">
-          <button
-            onClick={() => setSelectedDate(today)}
-            className="px-4 py-2 bg-cyan-50 text-cyan-600 rounded-lg hover:bg-cyan-100 transition-colors font-medium">
-            Today's Appointments
-          </button>
-          <button
-            onClick={() => {
-              setSelectedDate("");
-              setStatusFilter("all");
-              setsearchTerm("");
-              setPaymentFilter("all");
-            }}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
-            Clear All Filters
-          </button>
-          <button className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors font-medium flex items-center gap-2">
-            <Download className="w-4 h-4" />
-            Export
-          </button>
-          <div className="ml-auto text-sm text-gray-600 font-medium">
-            Showing{" "}
-            <span className="text-cyan-600 font-bold">
-              {filteredAppointments.length}
-            </span>{" "}
-            of <span className="font-bold">{appointments.length}</span>{" "}
-            appointments
+        {/* Filters */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search patient..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="relative">
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent appearance-none">
+                <option value="all">All Status</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="follow-up">Follow-up</option>
+                <option value="no-show">Patient absent</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <select
+                value={paymentFilter}
+                onChange={(e) => setPaymentFilter(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent appearance-none">
+                <option value="all">All Payments</option>
+                <option value="paid">Paid Only</option>
+                <option value="pending">Pending Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 mt-4 pt-4 border-t border-gray-200">
+            <button
+              onClick={() => {
+                setSelectedDate("");
+                setStatusFilter("all");
+                setSearchTerm("");
+                setPaymentFilter("all");
+              }}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">
+              Clear All Filters
+            </button>
+            <button className="px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors font-medium flex items-center gap-2">
+              <Download className="w-4 h-4" />
+              Export
+            </button>
+            <div className="ml-auto text-sm text-gray-600 font-medium">
+              Showing{" "}
+              <span className="text-cyan-600 font-bold">
+                {filteredAppointments.length}
+              </span>{" "}
+              appointments
+            </div>
           </div>
         </div>
       </div>
 
-      {/* appointments list */}
+      {/* Appointments List */}
       <div className="space-y-4">
         {filteredAppointments.length === 0 ? (
           <EmptyState
-            icon={Calendar}
-            title="No appointments Found"
+            icon={
+              activeTab === "today"
+                ? Calendar
+                : activeTab === "followup"
+                ? RotateCcw
+                : Archive
+            }
+            title={
+              activeTab === "today"
+                ? "No Today's Appointments"
+                : activeTab === "followup"
+                ? "No Follow-ups Scheduled"
+                : "No Archived Appointments"
+            }
             message={
               searchTerm
-                ? "Try adjusting your filters or check back later"
-                : "You don't have any appointments yet"
+                ? "Try adjusting your filters"
+                : activeTab === "today"
+                ? "No appointments scheduled for today"
+                : activeTab === "followup"
+                ? "No follow-up appointments scheduled"
+                : "No archived appointments found"
             }
           />
         ) : (
-          filteredAppointments.map((appointment) => (
-            <div
-              key={appointment._id}
-              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all border border-gray-200">
-              <div className="p-6">
-                <div className="flex items-start justify-between">
-                  {/* Patient Info */}
-                  <div className="flex items-start gap-4 flex-1">
-                    <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-md flex-shrink-0">
-                      {appointment.patientInfo.name?.charAt(0).toUpperCase()}
-                    </div>
+          filteredAppointments.map((appointment) => {
+            const isExpired = isAppointmentExpired(
+              appointment.appointmentDate,
+              appointment.appointmentTime
+            );
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-3">
-                        <h3 className="text-lg font-bold text-gray-900">
-                          {appointment.patientInfo.name}
-                        </h3>
-                        {getStatusBadge(appointment.status)}
-                      </div>
+            const hoursPassed = getHoursPassed(
+              appointment.appointmentDate,
+              appointment.appointmentTime
+            );
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mb-4">
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <span className="truncate">
-                            {appointment.patientId.email}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          {appointment.patientId.phone}
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Activity className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          Blood: {appointment.patientId.bloodGroup}
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          <FormattedDate date={appointment.appointmentDate} />
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          {appointment.appointmentTime} ({appointment.duration}{" "}
-                          min)
-                        </div>
-                        <div className="flex items-center gap-2 text-gray-600">
-                          <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                          ID: {appointment.bookingId}
-                        </div>
-                      </div>
+            const showTimeOverWarning = hoursPassed >= 4 && isExpired;
+            console.log("showTimeOverWarning", showTimeOverWarning, isExpired);
 
-                      <div className="flex flex-wrap items-center gap-3 mb-3">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
-                          <FileText className="w-4 h-4" />
-                          {appointment.service}
-                        </div>
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
-                          <DollarSign className="w-4 h-4" />
-                          {appointment.payment.consultationFee}
-                        </div>
-                      </div>
+            const canDelete =
+              (appointment.status === "cancelled" ||
+                appointment.status === "completed" ||
+                appointment.status === "no-show" ||
+                appointment.status === "archived") &&
+              isExpired;
 
-                      {appointment.patientNotes && (
-                        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                          <p className="text-sm text-blue-900">
-                            <span className="font-semibold flex items-center gap-2 mb-1">
-                              <MessageSquare className="w-4 h-4" />
-                              Patient Notes:
-                            </span>
-                            {appointment.patientNotes}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+            return (
+              <div
+                key={appointment._id}
+                className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all border ${
+                  showTimeOverWarning
+                    ? "border-red-300 ring-2 ring-red-100"
+                    : "border-gray-200"
+                }`}>
+                {/* TIME OVER WARNING BANNER */}
+                {showTimeOverWarning && appointment.status !== "completed" && (
+                  <div
+                    className={`${
+                      appointment.status !== "completed"
+                        ? "bg-gradient-to-r from-red-500 to-red-600"
+                        : ""
+                    }  text-white px-6 py-3 flex items-center gap-3 rounded-t-xl`}>
+                    <AlertTriangle className="w-5 h-5 animate-pulse " />
+                    <span className="font-bold text-sm">
+                      Time Over: {Math.floor(hoursPassed)} hours passed since
+                      appointment time
+                    </span>
                   </div>
+                )}
 
-                  <div className="flex flex-col gap-2 ml-4 flex-shrink-0">
-                    {appointment.status === "pending" && (
-                      <>
+                <div className="p-6">
+                  <div className="flex flex-col lg:flex-row items-start gap-4">
+                    {/* Patient Info */}
+                    <div className="flex items-start gap-4 flex-1 w-full">
+                      <div>
+                        {appointment.patientId?.profileImage ? (
+                          <Avatar
+                            name={appointment.patientId.name}
+                            src={appointment.patientId.profileImage}
+                            size="md"
+                            status="online"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 shadow-md">
+                            <div className="w-full h-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                              {appointment.patientInfo.name
+                                ?.charAt(0)
+                                .toUpperCase()}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
+                          <h3 className="text-lg font-bold text-gray-900">
+                            {appointment.patientInfo.name}
+                          </h3>
+                          {getStatusBadge(appointment.status)}
+                        </div>
+
+                        {/* Contact Info Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mb-4">
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span className="truncate">
+                              {appointment.patientId?.email}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            {appointment.patientInfo.phone}
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Activity className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            Blood: {appointment.patientId?.bloodGroup || "N/A"}
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <FormattedDate date={appointment.appointmentDate} />
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            {appointment.appointmentTime} (
+                            {appointment.duration} min)
+                          </div>
+                          <div className="flex items-center gap-2 text-gray-600">
+                            <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            ID: {appointment.bookingId}
+                          </div>
+                        </div>
+
+                        {/* Service & Fee */}
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium">
+                            <FileText className="w-4 h-4" />
+                            {appointment.service}
+                          </div>
+                          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-sm font-medium">
+                            <DollarSign className="w-4 h-4" />৳
+                            {appointment.payment.consultationFee}
+                          </div>
+                          {getPaymentBadge(
+                            appointment.payment.paymentStatus,
+                            appointment.payment.paymentMethod
+                          )}
+                        </div>
+
+                        {/* Patient Notes */}
+                        {appointment.patientNotes && (
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-900">
+                              <span className="font-semibold flex items-center gap-2 mb-1">
+                                <MessageSquare className="w-4 h-4" />
+                                Patient Notes:
+                              </span>
+                              {appointment.patientNotes}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 lg:ml-4 w-full lg:w-auto lg:min-w-[200px]">
+                      {/* Confirm Button */}
+                      {/* Confirm Button - Only show if time NOT over */}
+                      {appointment.status === "scheduled" &&
+                        !showTimeOverWarning && (
+                          <button
+                            onClick={() => handleConfirm(appointment._id)}
+                            disabled={isConfirming}
+                            className="w-full px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm font-medium">
+                            <CheckCircle className="w-4 h-4" />
+                            {isConfirming ? "Confirming..." : "Confirm"}
+                          </button>
+                        )}
+
+                      {/* Archive Button - Show when time is over */}
+                      {appointment.status === "scheduled" &&
+                        showTimeOverWarning && (
+                          <button
+                            onClick={() => handleArchive(appointment._id)}
+                            disabled={isArchiving}
+                            className="w-full px-4 py-2.5 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm font-medium">
+                            <Archive className="w-4 h-4" />
+                            {isArchiving ? "Archiving..." : "Archive"}
+                          </button>
+                        )}
+
+                      {/* Mark as No-Show */}
+                      {appointment.status === "confirmed" && (
                         <button
-                          onClick={() =>
-                            handleStatusUpdate(appointment._id, "confirmed")
-                          }
-                          disabled={isUpdating}
-                          className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          Confirm
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleStatusUpdate(appointment._id, "cancelled")
-                          }
-                          disabled={isUpdating}
-                          className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
+                          onClick={() => handleNoShow(appointment._id)}
+                          disabled={isMarkingNoShow}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg hover:from-orange-600 hover:to-orange-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm font-medium">
                           <XCircle className="w-4 h-4" />
-                          Cancel
+                          {isMarkingNoShow ? "Marking..." : "Patient absent"}
                         </button>
-                      </>
-                    )}
-
-                    {(appointment.status === "confirmed" ||
-                      appointment.status === "scheduled") && (
-                      <>
-                        <button
-                          onClick={() =>
-                            handleStatusUpdate(appointment._id, "completed")
-                          }
-                          disabled={isUpdating}
-                          className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
-                          <CheckCircle className="w-4 h-4" />
-                          Complete
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleStatusUpdate(appointment._id, "no-show")
-                          }
-                          disabled={isUpdating}
-                          className="px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
-                          <XCircle className="w-4 h-4" />
-                          No Show
-                        </button>
-                      </>
-                    )}
-
-                    {appointment.status === "completed" && (
-                      <button
-                        onClick={() => setSelectedAppointment(appointment)}
-                        className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg hover:from-cyan-600 hover:to-cyan-700 transition-all flex items-center gap-2 shadow-sm">
-                        <Eye className="w-4 h-4" />
-                        Details
-                      </button>
-                    )}
-
-                    {(appointment.status === "confirmed" ||
-                      appointment.status === "completed") && (
-                      <button
-                        onClick={() => handleOpenPrescriptionModal(appointment)}
-                        className="px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 transition-all flex items-center gap-2 shadow-sm">
-                        <Plus className="w-4 h-4" />
-                        Prescription
-                      </button>
-                    )}
-
-                    {appointment.payment.paymentStatus === "pending" && (
-                      <button
-                        onClick={() => handleOpenPaymentModal(appointment)}
-                        disabled={isMarkingPayment}
-                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm">
-                        <DollarSign className="w-4 h-4" />
-                        Mark as Paid
-                      </button>
-                    )}
-                    <button className="px-4 py-2 rounded-md border border-blue-300 transition-all flex items-center gap-2 shadow-sm">
-                      <span className="font-medium">Payment Status:</span>
-                      {getPaymentBadge(
-                        appointment.payment.paymentStatus,
-                        appointment.payment.paymentMethod
                       )}
-                    </button>
+
+                      {/* View Details */}
+                      <Link to={`${appointment._id}`}>
+                        <PrimaryButton className="w-full">
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Details
+                        </PrimaryButton>
+                      </Link>
+
+                      {/* Delete Button */}
+                      {canDelete && (
+                        <button
+                          onClick={() =>
+                            handleDelete(
+                              appointment._id,
+                              appointment.patientInfo.name
+                            )
+                          }
+                          disabled={isDeleting}
+                          className="w-full px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm font-medium">
+                          <Trash2 className="w-4 h-4" />
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
-
-      <Modal
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        title="Create Prescription">
-        <PrescriptionForm
-          patientData={selectedAppointment}
-          onCancel={handleCloseModal}
-          onSuccess={handlePrescriptionSuccess}
-        />
-      </Modal>
-
-      {isPaymentModalOpen && (
-        <PaymentModal
-          appointment={selectedPaymentAppointment}
-          isOpen={isPaymentModalOpen}
-          onClose={() => {
-            setIsPaymentModalOpen(false);
-            setSelectedPaymentAppointment(null);
-          }}
-          onConfirm={(appointmentId, amount, note) =>
-            handleMarkAsPaid(appointmentId, amount, note)
-          }
-        />
-      )}
     </div>
   );
 }

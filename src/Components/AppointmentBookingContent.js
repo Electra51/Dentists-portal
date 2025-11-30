@@ -76,6 +76,10 @@ const AppointmentBookingContent = ({
   };
 
   const handleConfirmAppointment = async () => {
+    const year = selectedDate.getFullYear();
+    const month = String(selectedDate.getMonth() + 1).padStart(2, "0"); // Months are 0-indexed
+    const day = String(selectedDate.getDate()).padStart(2, "0");
+    const localAppointmentDate = `${year}-${month}-${day}`;
     if (!currentUser) {
       alert("Please login first");
       return;
@@ -102,7 +106,7 @@ const AppointmentBookingContent = ({
     try {
       const appointmentData = {
         doctorId: dentist._id,
-        appointmentDate: selectedDate.toISOString().split("T")[0],
+        appointmentDate: localAppointmentDate,
         appointmentTime: selectedTime,
         appointmentTime24: convertTo24Hour(selectedTime),
         service: selectedService,

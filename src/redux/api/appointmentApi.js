@@ -37,6 +37,11 @@ export const appointmentApi = createApi({
       query: (status) => (status ? `/patient?status=${status}` : "/patient"),
       providesTags: ["Appointments"],
     }),
+    // Get archived appointments
+    getArchivedAppointments: builder.query({
+      query: () => "/doctor/archived",
+      providesTags: ["Appointments"],
+    }),
 
     // ==================== APPOINTMENTS ====================
     getDoctorAppointments: builder.query({
@@ -51,14 +56,20 @@ export const appointmentApi = createApi({
     }),
 
     getAppointmentDetails: builder.query({
-      query: (appointmentId) => `/appointment/${appointmentId}`,
+      query: (appointmentId) => `/${appointmentId}`,
       providesTags: ["Appointments"],
     }),
-
+    deleteAppointment: builder.mutation({
+      query: (appointmentId) => ({
+        url: `/appointments/${appointmentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
     updateAppointmentStatus: builder.mutation({
       query: ({ appointmentId, status }) => ({
-        url: `/appointment/${appointmentId}/status`,
-        method: "PUT",
+        url: `/${appointmentId}/status`,
+        method: "PATCH",
         body: { status },
       }),
       invalidatesTags: ["Appointments", "Dashboard"],
@@ -73,15 +84,114 @@ export const appointmentApi = createApi({
       }),
       invalidatesTags: ["Appointments"],
     }),
+
+    // Get single appointment details
+    // getAppointmentDetails: builder.query({
+    //   query: (appointmentId) => `/${appointmentId}`,
+    //   providesTags: ["Appointments"],
+    // }),
+
+    // ✅ NEW: Confirm appointment (Doctor)
+    confirmAppointment: builder.mutation({
+      query: (appointmentId) => ({
+        url: `/${appointmentId}/confirm`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // ✅ NEW: Complete appointment (Doctor)
+    completeAppointment: builder.mutation({
+      query: ({ appointmentId, ...data }) => ({
+        url: `/${appointmentId}/complete`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // ✅ NEW: Mark as no-show (Doctor)
+    markAsNoShow: builder.mutation({
+      query: ({ appointmentId, reason }) => ({
+        url: `/${appointmentId}/no-show`,
+        method: "PATCH",
+        body: { reason },
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // Mark payment received
+    // markPaymentReceived: builder.mutation({
+    //   query: ({ appointmentId, amount, note }) => ({
+    //     url: `/${appointmentId}/mark-paid`,
+    //     method: "PATCH",
+    //     body: { amount, note },
+    //   }),
+    //   invalidatesTags: ["Appointments"],
+    // }),
+
+    // Cancel appointment (Patient)
+    cancelAppointment: builder.mutation({
+      query: ({ appointmentId, reason }) => ({
+        url: `/${appointmentId}/cancel`,
+        method: "PATCH",
+        body: { reason },
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // Delete appointment
+    // deleteAppointment: builder.mutation({
+    //   query: (appointmentId) => ({
+    //     url: `/${appointmentId}`,
+    //     method: "DELETE",
+    //   }),
+    //   invalidatesTags: ["Appointments"],
+    // }),
+
+    // Archive expired appointments (Manual trigger)
+    archiveExpiredAppointments: builder.mutation({
+      query: () => ({
+        url: "/archive-expired",
+        method: "POST",
+      }),
+      invalidatesTags: ["Appointments"],
+    }),
+
+    // ✅ DEPRECATED: Keep for backward compatibility
+    // updateAppointmentStatus: builder.mutation({
+    //   query: ({ appointmentId, status }) => ({
+    //     url: `/${appointmentId}/status`,
+    //     method: "PATCH",
+    //     body: { status },
+    //   }),
+    //   invalidatesTags: ["Appointments"],
+    // }),
   }),
 });
 
 export const {
+  // useGetAvailableSlotsQuery,
+  // useCreateAppointmentMutation,
+  // useGetPatientAppointmentsQuery,
+  // useGetDoctorAppointmentsQuery,
+  // useGetAppointmentDetailsQuery,
+  // useUpdateAppointmentStatusMutation,
+  // useMarkPaymentReceivedMutation,
+  // useDeleteAppointmentMutation,
+
   useGetAvailableSlotsQuery,
   useCreateAppointmentMutation,
   useGetPatientAppointmentsQuery,
   useGetDoctorAppointmentsQuery,
+  useGetArchivedAppointmentsQuery,
   useGetAppointmentDetailsQuery,
-  useUpdateAppointmentStatusMutation,
+  useConfirmAppointmentMutation,
+  useCompleteAppointmentMutation,
+  useMarkAsNoShowMutation,
   useMarkPaymentReceivedMutation,
+  useCancelAppointmentMutation,
+  useDeleteAppointmentMutation,
+  useArchiveExpiredAppointmentsMutation,
+  useUpdateAppointmentStatusMutation, // Deprecated
 } = appointmentApi;
