@@ -22,13 +22,15 @@ import {
 import LoadingState from "../../../Components/states/LoadingState";
 import DashboardHeader from "../../../Components/DashboardHeader";
 import EmptyState from "../../../Components/states/EmptyState";
+import useApproveDoctor from "../../../hooks/useApproveDoctor";
+import RejectionFrom from "../../../Components/RejectionFrom";
+import { Modal } from "../../../Components/Modal";
 
 export default function DentistsVerification() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
-
   const { data, isLoading, refetch } = useGetPendingDoctorsQuery();
   const [approveDoctor, { isLoading: isApproving }] =
     useApproveDoctorMutation();
@@ -42,21 +44,7 @@ export default function DentistsVerification() {
       doctor.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       doctor.bmdcNumber?.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleApprove = async (doctorId) => {
-    if (!window.confirm("Are you sure you want to approve this doctor?")) {
-      return;
-    }
-
-    try {
-      const res = await approveDoctor(doctorId).unwrap();
-      toast.success(res.message || "Doctor approved successfully!");
-      refetch();
-    } catch (error) {
-      console.error(error);
-      toast.error(error?.data?.message || "Failed to approve doctor");
-    }
-  };
+  const { handleApprove } = useApproveDoctor(approveDoctor, refetch);
 
   const handleRejectClick = (doctor) => {
     setSelectedDoctor(doctor);
@@ -169,7 +157,11 @@ export default function DentistsVerification() {
 
                     <div className="flex gap-3">
                       <button
-                        onClick={() => handleApprove(doctor._id)}
+                        onClick={() =>
+                          handleApprove({
+                            doctorId: doctor._id,
+                          })
+                        }
                         disabled={isApproving}
                         className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2.5 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed">
                         {isApproving ? (
@@ -265,59 +257,27 @@ export default function DentistsVerification() {
       )}
 
       {showRejectModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="bg-red-500 text-white px-6 py-4 rounded-t-2xl">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                <XCircle className="w-6 h-6" />
-                Reject Doctor Verification
-              </h3>
-            </div>
-
-            <div className="p-6">
-              <p className="text-gray-700 mb-4">
-                You are about to reject the verification request for{" "}
-                <strong>{selectedDoctor?.name}</strong>. Please provide a
-                reason:
-              </p>
-
-              <textarea
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Enter reason for rejection..."
-                className="w-full border border-gray-300 rounded-lg p-3 min-h-[120px] focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => {
-                    setShowRejectModal(false);
-                    setRejectionReason("");
-                    setSelectedDoctor(null);
-                  }}
-                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition">
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRejectSubmit}
-                  disabled={isRejecting || !rejectionReason.trim()}
-                  className="flex-1 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                  {isRejecting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Rejecting...
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-5 h-5" />
-                      Confirm Rejection
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Modal
+          isOpen={showRejectModal}
+          onClose={() => {
+            setShowRejectModal(false);
+            setSelectedDoctor(null);
+            setRejectionReason("");
+          }}
+          title="Reject Doctor Verification">
+          <RejectionFrom
+            selectedDoctor={selectedDoctor}
+            rejectionReason={rejectionReason}
+            setRejectionReason={setRejectionReason}
+            isRejecting={isRejecting}
+            handleRejectSubmit={handleRejectSubmit}
+            onCancel={() => {
+              setShowRejectModal(false);
+              setSelectedDoctor(null);
+              setRejectionReason("");
+            }}
+          />
+        </Modal>
       )}
     </div>
   );

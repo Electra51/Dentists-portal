@@ -37,3 +37,30 @@ code {
   width: 100%;
   @apply bg-[#67D3CF];
 }
+
+/* .swal-confirm-btn {
+  background-color: #6cd6bc !important; 
+  color: white;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+} */
+.swal-confirm-btn {
+  background: linear-gradient(to right, #6cd6bc, #3abff8) !important;
+  color: white !important;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  transition: 0.2s ease-in-out;
+}
+
+.swal-cancel-btn {
+  background-color: #d33 !important;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-left: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
