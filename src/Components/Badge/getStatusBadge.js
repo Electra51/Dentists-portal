@@ -39,6 +39,18 @@ const getStatusBadge = (status) => {
       icon: <XCircle className="w-4 h-4" />,
       label: "No Show",
     },
+    approved: {
+      bg: "bg-green-100",
+      text: "text-green-700",
+      icon: <CheckCircle className="w-4 h-4" />,
+      label: "Approved",
+    },
+    rejected: {
+      bg: "bg-red-100",
+      text: "text-red-700",
+      icon: <XCircle className="w-4 h-4" />,
+      label: "Rejected",
+    },
   };
 
   const badge = badges[status] || badges.pending;

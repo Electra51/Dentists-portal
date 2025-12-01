@@ -29,6 +29,7 @@ import AllDentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDen
 import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPatientsList";
 import AdminRevenueMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminRevenueMenu";
 import AdminReportsMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminReportsMenu";
+import DentistsEarningPage from "../../Pages/DashboardPages/DashboardForDentists/DentistsEarningPage";
 
 const router = createBrowserRouter([
   {
@@ -167,7 +168,7 @@ const router = createBrowserRouter([
       },
       {
         path: "payments",
-        element: <h2>payments page</h2>,
+        element: <DentistsEarningPage />,
       },
       {
         path: "profile",

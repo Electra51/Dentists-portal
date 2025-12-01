@@ -36,7 +36,9 @@ export const revenueEarningApi = baseApi.injectEndpoints({
       providesTags: ["Revenue", "Transactions"],
     }),
 
-    // for doctor
+    // ========================
+    // doctor my-earning API
+    // ========================
     // ✅ Get Doctor Earnings Dashboard
     getDoctorEarningsDashboard: builder.query({
       query: () => "/doctor/earnings/dashboard",
@@ -46,7 +48,7 @@ export const revenueEarningApi = baseApi.injectEndpoints({
     // ✅ Get Doctor Earnings History
     getDoctorEarningsHistory: builder.query({
       query: ({ page = 1, limit = 20, status = "paid" }) =>
-        `/doctor/earnings/history?page=${page}&limit=${limit}&status=${status}`,
+        `/doctor/earnings/history`,
       providesTags: ["Earnings", "EarningsHistory"],
     }),
 
