@@ -28,6 +28,7 @@ import DentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentis
 import AllDentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPatientsList";
 import AdminRevenueMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminRevenueMenu";
+import AdminReportsMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminReportsMenu";
 
 const router = createBrowserRouter([
   {
@@ -162,7 +163,7 @@ const router = createBrowserRouter([
       },
       {
         path: "reports",
-        element: <h2>Reports</h2>,
+        element: <AdminReportsMenu />,
       },
       {
         path: "payments",
