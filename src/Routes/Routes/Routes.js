@@ -7,7 +7,6 @@ import Reviews from "../../Pages/Reviews/Reviews";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/DashboardPages/ProfilePage/Profile";
-import Patients from "../../Pages/PatientsList/Patients";
 import About from "../../Pages/AboutPage/About";
 import Home from "../../Pages/HomePage/Home";
 import Appointment from "../../Pages/AppointmentPage/Appointment";
@@ -27,6 +26,7 @@ import DentistsVerification from "../../Pages/DashboardPages/DashboardForAdmin/D
 import AllAppointments from "../../Pages/DashboardPages/DashboardForAdmin/AllAppointments";
 import DentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllDentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
+import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPatientsList";
 
 const router = createBrowserRouter([
   {
@@ -119,7 +119,7 @@ const router = createBrowserRouter([
       },
       {
         path: "patients",
-        element: <Patients />,
+        element: <AllPatientsList />,
       },
 
       {

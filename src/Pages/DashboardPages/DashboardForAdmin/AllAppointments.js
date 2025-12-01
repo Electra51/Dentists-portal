@@ -119,76 +119,13 @@ const AllAppointments = () => {
 
   return (
     <div className="p-6 space-y-6 max-w-[1440px] mx-auto">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <DashboardHeader
           icon={CalendarCheck}
           title="All Appointments"
-          subtitle="Manage and monitor all appointments"
+          subtitle={`Showing ${filteredAppointments.length} of ${filteredAppointments.length} appointments`}
         />
-
-        <div className="flex items-center gap-4 bg-white rounded-lg shadow px-6 py-3">
-          <div className="text-center border-r pr-4">
-            <p className="text-2xl font-bold text-cyan-600">
-              {data?.statistics?.total || 0}
-            </p>
-            <p className="text-xs text-gray-500">Total</p>
-          </div>
-          <div className="text-center border-r pr-4">
-            <p className="text-2xl font-bold text-green-600">
-              ৳{data?.statistics?.totalRevenue || 0}
-            </p>
-            <p className="text-xs text-gray-500">Revenue</p>
-          </div>
-          <div className="text-center">
-            <p className="text-2xl font-bold text-yellow-600">
-              ৳{data?.statistics?.pendingAmount || 0}
-            </p>
-            <p className="text-xs text-gray-500">Pending</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          {
-            label: "Completed",
-            count: data?.statistics?.completed,
-            color: "purple",
-          },
-          {
-            label: "Confirmed",
-            count: data?.statistics?.confirmed,
-            color: "green",
-          },
-          {
-            label: "Archived",
-            count: data?.statistics?.archived,
-            color: "gray",
-          },
-          {
-            label: "Cancelled",
-            count: data?.statistics?.cancelled,
-            color: "red",
-          },
-        ].map((stat) => (
-          <div
-            key={stat.label}
-            className="bg-white rounded-lg shadow p-4 border-l-4"
-            style={{ borderLeftColor: `var(--${stat.color}-500)` }}>
-            <p className="text-gray-500 text-sm">{stat.label}</p>
-            <p className={`text-3xl font-bold text-${stat.color}-600 mt-2`}>
-              {stat.count || 0}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
         <div className="flex items-center gap-4">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -216,9 +153,12 @@ const AllAppointments = () => {
             <option value="archived">Archived</option>
           </select>
         </div>
+      </div>
 
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-3">
         {/* Tabs */}
-        <div className="flex gap-2 mt-4 border-b">
+        <div className="flex gap-2 border-b">
           {["all", "active", "archived"].map((tab) => (
             <button
               key={tab}
@@ -372,7 +312,7 @@ const AllAppointments = () => {
                     <div className="space-y-1">
                       {getPaymentBadge(appointment.payment.paymentStatus)}
                       <p className="text-sm font-medium text-gray-900 flex items-center gap-1">
-                        <DollarSign size={14} />৳
+                        <DollarSign size={14} />
                         {appointment.payment.consultationFee}
                       </p>
                       <p className="text-xs text-gray-500">

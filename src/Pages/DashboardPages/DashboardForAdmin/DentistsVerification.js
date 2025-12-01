@@ -85,32 +85,35 @@ export default function DentistsVerification() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-[1440px] mx-auto p-6">
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-start justify-between mb-4">
           <DashboardHeader
             icon={UserCheck}
             title="Dentists Verification Requests"
             subtitle="Review and approve doctor registration requests"
           />
 
-          <div className="bg-cyan-50 px-4 py-2 rounded-lg">
-            <p className="text-sm text-gray-600">Pending Requests</p>
-            <p className="text-2xl font-bold text-cyan-600">
-              {pendingDoctors.length}
-            </p>
+          <div className="flex justify-center items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search by name, email, or BMDC number..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              />
+            </div>
+            <div className="bg-cyan-50 px-4 py-2 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Pending Requests{" "}
+                <span className="text-2xl font-bold text-cyan-600">
+                  {pendingDoctors.length}
+                </span>
+              </p>
+            </div>
           </div>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            type="text"
-            placeholder="Search by name, email, or BMDC number..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-          />
         </div>
       </div>
 

@@ -183,7 +183,7 @@ export default function AllDentistsList() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-[1440px] mx-auto p-6">
       <div className="flex justify-between items-start mb-2">
         <DashboardHeader
           icon={Stethoscope}
