@@ -27,6 +27,7 @@ import AllAppointments from "../../Pages/DashboardPages/DashboardForAdmin/AllApp
 import DentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllDentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPatientsList";
+import AdminRevenueMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminRevenueMenu";
 
 const router = createBrowserRouter([
   {
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
       {
         path: "admin-appointments",
         element: <AllAppointments />,
+      },
+      {
+        path: "admin-revenue",
+        element: <AdminRevenueMenu />,
       },
 
       {

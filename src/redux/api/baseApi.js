@@ -13,6 +13,7 @@ export const baseApi = createApi({
     },
   }),
   tagTypes: [
+    "revenueEarning",
     "Auth",
     "Dashboard",
     "Appointments",
