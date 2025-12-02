@@ -3,7 +3,6 @@ import Main from "../../Layout/Main";
 import ErrorPage from "../../Pages/ErrorPage/ErrorPage";
 import Login from "../../Pages/Login/Login";
 import Signup from "../../Pages/Login/Signup";
-import Reviews from "../../Pages/Reviews/Reviews";
 import PrivateRoute from "../PrivateRoute/PrivateRoute";
 import DashboardLayout from "../../Layout/DashboardLayout";
 import Profile from "../../Pages/DashboardPages/ProfilePage/Profile";
@@ -24,7 +23,6 @@ import AppointmentDetails from "../../Pages/DashboardPages/DashboardForDentists/
 import PatientsDetails from "../../Pages/DashboardPages/DashboardForDentists/DentistsWisePatient/PatientsDetails";
 import DentistsVerification from "../../Pages/DashboardPages/DashboardForAdmin/DentistsVerification";
 import AllAppointments from "../../Pages/DashboardPages/DashboardForAdmin/AllAppointments";
-import DentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllDentistsList from "../../Pages/DashboardPages/DashboardForAdmin/AllDentistsList";
 import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPatientsList";
 import AdminRevenueMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminRevenueMenu";
@@ -32,8 +30,10 @@ import AdminReportsMenu from "../../Pages/DashboardPages/DashboardForAdmin/Admin
 import DentistsEarningPage from "../../Pages/DashboardPages/DashboardForDentists/DentistsEarningPage";
 import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
 import AdminReviewMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminReviewMenu";
+import Review from "../../Pages/DentistsMenuPage/Review";
 
 const router = createBrowserRouter([
+  //all user can see this below routes
   {
     path: "/",
     element: <Main />,
@@ -67,12 +67,9 @@ const router = createBrowserRouter([
         path: "/appointment",
         element: <Appointment />,
       },
-      {
-        path: "/reviews",
-        element: <Reviews />,
-      },
     ],
   },
+  //authentication route(login, signin)
   {
     path: "/Login",
     element: <Login />,
@@ -82,6 +79,7 @@ const router = createBrowserRouter([
     element: <Signup />,
   },
 
+  //dashboard for registered user
   {
     path: "/dashboard",
     element: (
@@ -95,8 +93,21 @@ const router = createBrowserRouter([
         element: <Dashboard />,
       },
       {
+        path: "profile",
+        element: <Profile />,
+      },
+      //only for admin
+      {
+        path: "doctor-verification",
+        element: <DentistsVerification />,
+      },
+      {
         path: "admin-dentists",
         element: <AllDentistsList />,
+      },
+      {
+        path: "patients",
+        element: <AllPatientsList />,
       },
       {
         path: "admin-appointments",
@@ -106,7 +117,24 @@ const router = createBrowserRouter([
         path: "admin-revenue",
         element: <AdminRevenueMenu />,
       },
-
+      {
+        path: "reports",
+        element: <AdminReportsMenu />,
+      },
+      {
+        path: "admin-reviews",
+        element: <AdminReviewMenu />,
+      },
+      // only for patients
+      {
+        path: "my-appointments",
+        element: <MyAppointmentPage />,
+      },
+      {
+        path: "my-prescriptions",
+        element: <MyPrescriptionPage />,
+      },
+      //only for dentists
       {
         path: "appointments",
         children: [
@@ -121,20 +149,6 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "my-appointments",
-        element: <MyAppointmentPage />,
-      },
-
-      {
-        path: "doctor-verification",
-        element: <DentistsVerification />,
-      },
-      {
-        path: "patients",
-        element: <AllPatientsList />,
-      },
-
-      {
         path: "my-patients",
         children: [
           {
@@ -148,14 +162,6 @@ const router = createBrowserRouter([
         ],
       },
       {
-        path: "my-prescriptions",
-        element: <MyPrescriptionPage />,
-      },
-      {
-        path: "dentists",
-        element: <DentistsList />,
-      },
-      {
         path: "prescriptions",
         element: <DentistsPrescriptionList />,
       },
@@ -164,24 +170,16 @@ const router = createBrowserRouter([
         element: <DentistsSchedulePage />,
       },
       {
-        path: "admin-reviews",
-        element: <AdminReviewMenu />,
-      },
-      {
-        path: "reports",
-        element: <AdminReportsMenu />,
-      },
-      {
-        path: "payments",
-        element: <DentistsEarningPage />,
-      },
-      {
-        path: "profile",
-        element: <Profile />,
+        path: "reviews",
+        element: <Review />,
       },
       {
         path: "settings",
         element: <DentistSettingsPage />,
+      },
+      {
+        path: "payments",
+        element: <DentistsEarningPage />,
       },
     ],
   },
