@@ -44,6 +44,7 @@ export const appointmentApi = baseApi.injectEndpoints({
       query: (appointmentId) => `/appointments/${appointmentId}`,
       providesTags: ["Appointments"],
     }),
+
     deleteAppointment: builder.mutation({
       query: (appointmentId) => ({
         url: `/appointments/appointments/${appointmentId}`,
@@ -51,6 +52,7 @@ export const appointmentApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Appointments"],
     }),
+
     updateAppointmentStatus: builder.mutation({
       query: ({ appointmentId, status }) => ({
         url: `/appointments/${appointmentId}/status`,

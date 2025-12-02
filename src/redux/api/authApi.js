@@ -9,6 +9,7 @@ export const authApi = baseApi.injectEndpoints({
         body: userData,
       }),
     }),
+
     loginUser: builder.mutation({
       query: (loginData) => ({
         url: "/auth/login",
@@ -16,10 +17,12 @@ export const authApi = baseApi.injectEndpoints({
         body: loginData,
       }),
     }),
+
     getUserProfile: builder.query({
       query: () => "/auth/profile",
       providesTags: ["User"],
     }),
+
     updateUserProfile: builder.mutation({
       query: (data) => ({
         url: "/auth/profile",
@@ -28,10 +31,12 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
     getPendingDoctors: builder.query({
       query: () => "/auth/pending-doctors",
       providesTags: ["PendingDoctors"],
     }),
+
     uploadUserImage: builder.mutation({
       query: ({ email, formData }) => ({
         url: `/auth/profile/upload/${email}`,
@@ -40,6 +45,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
     requestVerification: builder.mutation({
       query: () => ({
         url: "/auth/request-verification",
@@ -47,6 +53,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+
     approveDoctor: builder.mutation({
       query: (doctorId) => ({
         url: `/auth/approve-doctor/${doctorId}`,
@@ -54,6 +61,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
     }),
+
     rejectDoctor: builder.mutation({
       query: ({ doctorId, reason }) => ({
         url: `/auth/reject-doctor/${doctorId}`,
@@ -62,16 +70,18 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["PendingDoctors", "Doctors", "DashboardStats"],
     }),
-    //doctor route
+
     getDoctorPatients: builder.query({
       query: ({ search = "", bloodGroup = "all" } = {}) =>
         `/doctor/patients?search=${search}&bloodGroup=${bloodGroup}`,
       providesTags: ["Patients"],
     }),
+
     getPatientDetailsByDoctor: builder.query({
       query: (patientId) => `/doctor/patient/${patientId}`,
       providesTags: ["Patients"],
     }),
+
     getDoctorSchedule: builder.query({
       query: () => "/doctor/schedule",
       providesTags: ["Schedule"],
@@ -85,6 +95,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Schedule", "Profile"],
     }),
+
     getDoctorSettings: builder.query({
       query: () => "/doctor/settings",
       providesTags: ["Settings"],
@@ -98,6 +109,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Settings"],
     }),
+
     getAllDentists: builder.query({
       query: ({
         search = "",
@@ -111,7 +123,7 @@ export const authApi = baseApi.injectEndpoints({
           params.append("specialization", specialization);
         if (department !== "all") params.append("department", department);
         if (sortBy) params.append("sortBy", sortBy);
-        return `/doctor/public/all?${params.toString()}`;
+        return `/doctor/public/all`;
       },
       providesTags: ["PublicDentists"],
     }),
@@ -121,20 +133,27 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ["PublicDentists"],
     }),
 
-    //admin
+    getApproveDoctors: builder.query({
+      query: (status) => `/admin/doctors?status=${status}`,
+      providesTags: ["Doctors"],
+    }),
+
     getAllDoctors: builder.query({
       query: (status = "all") => `/admin/doctors?status=${status}`,
       providesTags: ["Doctors"],
     }),
+
     getAllPatients: builder.query({
       query: ({ search = "", bloodGroup = "all", sortBy = "createdAt" } = {}) =>
         `/admin/patients?search=${search}&bloodGroup=${bloodGroup}&sortBy=${sortBy}`,
       providesTags: ["Patients"],
     }),
+
     getPatientDetails: builder.query({
       query: (patientId) => `/admin/patient/${patientId}`,
       providesTags: ["Patients"],
     }),
+
     deletePatient: builder.mutation({
       query: (patientId) => ({
         url: `/admin/patient/${patientId}`,
@@ -147,6 +166,7 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllPatientsQuery,
+  useGetApproveDoctorsQuery,
   useGetPatientDetailsQuery,
   useDeletePatientMutation,
   useGetAllDoctorsQuery,

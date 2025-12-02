@@ -27,6 +27,9 @@ export const baseApi = createApi({
     "Settings",
     "PendingDoctors",
     "Stats",
+    "Review",
+    "DoctorReviews",
+    "MyReviews",
   ],
   endpoints: () => ({}), // Empty - endpoints inject হবে
 });

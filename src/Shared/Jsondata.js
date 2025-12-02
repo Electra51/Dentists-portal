@@ -188,11 +188,11 @@ export const adminMenuItems = [
     path: "doctor-verification",
     icon: UserCheck,
   },
-  { path: "dentists", label: "Dentists List", icon: Users },
+  { path: "admin-dentists", label: "Dentists List", icon: Users },
   { path: "patients", label: "Patients Lists", icon: Activity },
   { path: "admin-appointments", label: "All Appointments", icon: Calendar },
   { path: "admin-revenue", label: "Revenue", icon: BarChart3 },
   { path: "reports", label: "Reports", icon: FileText },
-  { path: "reviews", label: "Reviews & Feedback", icon: Star },
+  { path: "admin-reviews", label: "Reviews & Feedback", icon: Star },
   { path: "profile", label: "My Profile", icon: UserCircle },
 ];

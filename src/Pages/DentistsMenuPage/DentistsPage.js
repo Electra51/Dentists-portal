@@ -18,7 +18,6 @@ const DentistsPage = () => {
     specialization: selectedSpecialization,
     sortBy,
   });
-
   const handleViewDetails = (dentistId) => {
     navigate(`/doctors/${dentistId}`);
   };

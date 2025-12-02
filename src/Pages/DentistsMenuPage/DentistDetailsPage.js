@@ -13,12 +13,12 @@ import {
   MessageSquare,
   ChevronLeft,
   ArrowRight,
-  ThumbsUp,
   Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useGetDentistDetailsQuery } from "../../redux/api/authApi";
+import Review from "./Review";
 
 const DentistDetailsPage = () => {
   const { dentistId } = useParams();
@@ -288,111 +288,13 @@ const DentistDetailsPage = () => {
             )}
 
             {activeTab === "reviews" && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Patient Reviews
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                  <div className="text-center">
-                    <div className="text-5xl font-bold text-gray-900 mb-2">
-                      {avgRating}
-                    </div>
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                          key={star}
-                          className={`w-6 h-6 ${
-                            star <= parseFloat(avgRating)
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-gray-300"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-gray-600">
-                      {totalReviews} total reviews
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    {[5, 4, 3, 2, 1].map((rating) => (
-                      <div key={rating} className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-gray-700 w-8">
-                          {rating}★
-                        </span>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-yellow-400 h-2 rounded-full"
-                            style={{
-                              width:
-                                totalReviews > 0
-                                  ? `${
-                                      (ratingDistribution[rating] /
-                                        totalReviews) *
-                                      100
-                                    }%`
-                                  : "0%",
-                            }}></div>
-                        </div>
-                        <span className="text-sm text-gray-600 w-12 text-right">
-                          {ratingDistribution[rating]}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {reviews.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <MessageSquare className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <p>No reviews yet. Be the first to review!</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {reviews.map((review) => (
-                      <div
-                        key={review._id}
-                        className="border-t border-gray-200 pt-4">
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-full bg-cyan-100 flex items-center justify-center flex-shrink-0">
-                            <span className="text-xl font-bold text-cyan-600">
-                              {review.patientId?.name?.charAt(0) || "P"}
-                            </span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-semibold text-gray-900">
-                                {review.patientId?.name || "Patient"}
-                              </h4>
-                              <span className="text-sm text-gray-500">
-                                {review.createdAt}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-1 mb-2">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`w-4 h-4 ${
-                                    star <= review.rating
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <p className="text-gray-700">{review.comment}</p>
-                            <button className="mt-2 text-sm text-cyan-600 hover:text-cyan-700 flex items-center gap-1">
-                              <ThumbsUp className="w-4 h-4" />
-                              Helpful
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <Review
+                doctorId={dentistId}
+                avgRating={avgRating}
+                totalReviews={totalReviews}
+                ratingDistribution={ratingDistribution}
+                reviews={reviews}
+              />
             )}
 
             {activeTab === "contact" && (

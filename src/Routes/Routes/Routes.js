@@ -30,6 +30,8 @@ import AllPatientsList from "../../Pages/DashboardPages/DashboardForAdmin/AllPat
 import AdminRevenueMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminRevenueMenu";
 import AdminReportsMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminReportsMenu";
 import DentistsEarningPage from "../../Pages/DashboardPages/DashboardForDentists/DentistsEarningPage";
+import DentistsPage from "../../Pages/DentistsMenuPage/DentistsPage";
+import AdminReviewMenu from "../../Pages/DashboardPages/DashboardForAdmin/AdminReviewMenu";
 
 const router = createBrowserRouter([
   {
@@ -47,7 +49,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/doctors",
-        element: <AllDentistsList />,
+        element: <DentistsPage />,
       },
       {
         path: "/doctors/:dentistId",
@@ -92,7 +94,10 @@ const router = createBrowserRouter([
         path: "",
         element: <Dashboard />,
       },
-
+      {
+        path: "admin-dentists",
+        element: <AllDentistsList />,
+      },
       {
         path: "admin-appointments",
         element: <AllAppointments />,
@@ -159,8 +164,8 @@ const router = createBrowserRouter([
         element: <DentistsSchedulePage />,
       },
       {
-        path: "reviews",
-        element: <h2>reviews page</h2>,
+        path: "admin-reviews",
+        element: <AdminReviewMenu />,
       },
       {
         path: "reports",
