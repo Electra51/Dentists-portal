@@ -119,7 +119,6 @@ const AppointmentBookingContent = ({
       };
 
       const response = await createAppointment(appointmentData).unwrap();
-      //   alert("Appointment booked successfully!");
       Swal.fire({
         icon: "success",
         title: "Appointment Booked!",
@@ -136,7 +135,6 @@ const AppointmentBookingContent = ({
         confirmButtonText: "View My Appointments",
       });
 
-      // Redirect after 2 seconds
       setTimeout(() => {
         navigate("/dashboard/my-appointments");
       }, 2000);

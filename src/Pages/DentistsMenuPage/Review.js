@@ -4,6 +4,7 @@ import { Star, MessageSquare, ThumbsUp, Loader2 } from "lucide-react";
 import { useSubmitReviewMutation } from "../../redux/api/reviewApi";
 import toast from "react-hot-toast";
 import FormattedDate from "../../Components/DateTimeFormate/FormattedDate";
+import Swal from "sweetalert2";
 
 const Review = ({
   doctorId,
@@ -118,9 +119,43 @@ const Review = ({
         </div>
       </div>
 
-      {!showReviewForm && (
+      {/* {!showReviewForm && (
         <button
           onClick={() => setShowReviewForm(true)}
+          className="w-full md:w-1/3 border border-cyan-600 hover:bg-cyan-50 transition-all mb-6 flex items-center justify-center gap-2 shadow-md rounded-md py-2 mx-auto mt-10">
+          <MessageSquare size={20} />
+          Write a Review
+        </button>
+      )} */}
+
+      {!showReviewForm && (
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem("token");
+            const role = localStorage.getItem("role");
+
+            if (!token) {
+              await Swal.fire({
+                icon: "warning",
+                title: "Authentication Required",
+                text: "Please login to write a review",
+                confirmButtonColor: "#06b6d4",
+              });
+              return;
+            }
+
+            if (role !== "0") {
+              await Swal.fire({
+                icon: "error",
+                title: "Access Denied",
+                text: "Only patients can review doctors",
+                confirmButtonColor: "#06b6d4",
+              });
+              return;
+            }
+
+            setShowReviewForm(true);
+          }}
           className="w-full md:w-1/3 border border-cyan-600 hover:bg-cyan-50 transition-all mb-6 flex items-center justify-center gap-2 shadow-md rounded-md py-2 mx-auto mt-10">
           <MessageSquare size={20} />
           Write a Review
@@ -195,18 +230,18 @@ const Review = ({
       )}
 
       {reviews?.length === 0 ? (
-        <div className="text-center py-12">
+        <div className="text-center py-12 mt-6">
           <MessageSquare size={64} className="mx-auto text-gray-300 mb-4" />
           <p className="text-gray-500 text-lg">
             No reviews yet. Be the first to review!
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-4 mt-5">
           {reviews?.map((review) => (
             <div
               key={review._id}
-              className="border-t border-gray-200 pt-6 hover:bg-gray-50 transition-colors rounded-lg p-4 -m-4">
+              className="border-t border-gray-200 pt-6 hover:bg-gray-50 transition-colors rounded-lg p-4 ">
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   {review.patientId?.profileImage ? (

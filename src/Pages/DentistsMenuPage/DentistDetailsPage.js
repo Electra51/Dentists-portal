@@ -1,19 +1,13 @@
 import React, { useState } from "react";
 import {
   Star,
-  MapPin,
   Award,
   Users,
   Calendar,
-  Phone,
-  Mail,
   CheckCircle,
-  Briefcase,
-  GraduationCap,
   MessageSquare,
   ChevronLeft,
   ArrowRight,
-  Building2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
@@ -21,6 +15,10 @@ import { useGetDentistDetailsQuery } from "../../redux/api/authApi";
 import Review from "./Review";
 import LoadingState from "../../Components/states/LoadingState";
 import MessageState from "../../Components/states/MessageState";
+import { convertTo12Hour } from "../../Utils/convertTo12Hour";
+import OverView from "./OverView";
+import Schedule from "./Schedule";
+import Contact from "./Contact";
 
 const DentistDetailsPage = () => {
   const { dentistId } = useParams();
@@ -159,128 +157,10 @@ const DentistDetailsPage = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            {activeTab === "overview" && (
-              <>
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    About
-                  </h2>
-                  <p className="text-gray-700 leading-relaxed">
-                    {dentist?.bio}
-                    Specialized in {dentist.specialization} with{" "}
-                    {dentist.experience} of experience. Providing quality dental
-                    care with modern techniques and patient-centered approach.
-                  </p>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Qualifications
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg">
-                      <GraduationCap className="w-6 h-6 text-blue-600 mt-1" />
-                      <div>
-                        <p className="font-semibold text-gray-900">Education</p>
-                        <p className="text-gray-700">{dentist.qualification}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg">
-                      <Briefcase className="w-6 h-6 text-green-600 mt-1" />
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Experience
-                        </p>
-                        <p className="text-gray-700">{dentist.experience}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-purple-50 rounded-lg">
-                      <Award className="w-6 h-6 text-purple-600 mt-1" />
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Registration
-                        </p>
-                        <p className="text-gray-700">{dentist.bmdcNumber}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-lg">
-                      <Building2 className="w-6 h-6 text-orange-600 mt-1" />
-                      <div>
-                        <p className="font-semibold text-gray-900">
-                          Department
-                        </p>
-                        <p className="text-gray-700">{dentist.department}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm p-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-4">
-                    Services Offered
-                  </h2>
-                  <div className="flex flex-wrap gap-3">
-                    {dentist?.services?.map((service, index) => (
-                      <span
-                        key={index}
-                        className="px-4 py-2 bg-cyan-50 text-cyan-700 rounded-full font-medium">
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
+            {activeTab === "overview" && <OverView dentist={dentist} />}
             {activeTab === "schedule" && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Weekly Schedule
-                </h2>
-                <div className="space-y-3">
-                  {daysOfWeek.map((day) => {
-                    const daySchedule = dentist.schedule?.schedule?.[day];
-
-                    return (
-                      <div
-                        key={day}
-                        className={`flex items-center justify-between p-4 rounded-lg border-2 ${
-                          daySchedule?.isAvailable
-                            ? "bg-green-50 border-green-200"
-                            : "bg-gray-50 border-gray-200"
-                        }`}>
-                        <div className="flex items-center gap-3">
-                          <Calendar
-                            className={`w-5 h-5 ${
-                              daySchedule?.isAvailable
-                                ? "text-green-600"
-                                : "text-gray-400"
-                            }`}
-                          />
-                          <span className="font-semibold text-gray-900 capitalize">
-                            {day}
-                          </span>
-                        </div>
-                        <div className="flex gap-2 flex-wrap">
-                          {daySchedule?.isAvailable ? (
-                            daySchedule.slots.map((slot, idx) => (
-                              <span
-                                key={idx}
-                                className="px-3 py-1 bg-white border border-green-300 rounded-lg text-sm font-medium text-green-700">
-                                {slot.start} - {slot.end}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="text-gray-500">Unavailable</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
+              <Schedule daysOfWeek={daysOfWeek} dentist={dentist} />
             )}
-
             {activeTab === "reviews" && (
               <Review
                 doctorId={dentistId}
@@ -290,44 +170,7 @@ const DentistDetailsPage = () => {
                 reviews={reviews}
               />
             )}
-
-            {activeTab === "contact" && (
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                  Contact Information
-                </h2>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
-                    <Phone className="w-6 h-6 text-blue-600 mt-1" />
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Phone</p>
-                      <p className="text-gray-700">{dentist.phone}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
-                    <Mail className="w-6 h-6 text-green-600 mt-1" />
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">Email</p>
-                      <p className="text-gray-700">{dentist.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4 p-4 bg-purple-50 rounded-lg">
-                    <MapPin className="w-6 h-6 text-purple-600 mt-1" />
-                    <div>
-                      <p className="font-semibold text-gray-900 mb-1">
-                        Address
-                      </p>
-                      <p className="text-gray-700">{dentist.address}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <MapPin className="w-12 h-12 text-gray-400" />
-                  <span className="ml-2 text-gray-500">Map View</span>
-                </div>
-              </div>
-            )}
+            {activeTab === "contact" && <Contact dentist={dentist} />}
           </div>
 
           <div className="space-y-6">
@@ -400,7 +243,12 @@ const DentistDetailsPage = () => {
                         }`}>
                         {daySchedule?.isAvailable
                           ? daySchedule.slots
-                              .map((s) => `${s.start}-${s.end}`)
+                              .map(
+                                (s) =>
+                                  `${convertTo12Hour(
+                                    s.start
+                                  )}-${convertTo12Hour(s.end)}`
+                              )
                               .join(", ")
                           : "Closed"}
                       </span>
