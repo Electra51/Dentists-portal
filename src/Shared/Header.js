@@ -120,13 +120,17 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const handleLogOut = useCallback(() => {
     logOut()
       .then(() => {
         dispatch(logout());
-        navigate("/login");
+        localStorage.removeItem("token");
+        navigate("/");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.error("Logout error:", err);
+      });
   }, [logOut, dispatch, navigate]);
 
   useEffect(() => {

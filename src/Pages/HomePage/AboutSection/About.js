@@ -1,36 +1,16 @@
 import React from "react";
-import treatment from "../../assets/images/treatment.png";
-import PrimaryButton from "../../Components/PrimaryButton";
-
+import treatment from "../../../assets/images/treatment.png";
+import PrimaryButton from "../../../Components/PrimaryButton";
 import { Link } from "react-router-dom";
-import { features, stats } from "../../Shared/Jsondata";
+import { features, stats } from "../../../Shared/Jsondata";
 import { Building } from "lucide-react";
-
-const FeatureItem = ({ icon: Icon, text }) => (
-  <div className="flex items-center gap-3 group">
-    <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center group-hover:bg-gradient-to-r from-secondary to-info text-white hover:opacity-90  group-hover:scale-110 transition-all duration-300">
-      <Icon className="w-5 h-5 text-primary group-hover:text-white transition-colors" />
-    </div>
-    <span className="text-gray-700 font-medium">{text}</span>
-  </div>
-);
-
-const StatCard = ({ number, label, icon: Icon }) => (
-  <div className="flex items-center gap-2 p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow">
-    <div className="w-12 h-12 bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 shadow-md rounded-lg flex items-center justify-center">
-      <Icon className="w-6 h-6 text-white" />
-    </div>
-    <div>
-      <h3 className="text-2xl font-bold text-gray-900">{number}</h3>
-      <p className="text-sm text-gray-600">{label}</p>
-    </div>
-  </div>
-);
+import StatCard from "./StatCard";
+import FeatureItem from "./FeatureItem";
 
 const About = () => {
   return (
-    <div className="hero min-h-max rounded-md p-10 mt-20 lg:mt-32">
-      <div className="hero-content grid grid-cols-1 lg:grid-cols-2 gap-14">
+    <div className="hero min-h-max max-w-7xl mx-auto rounded-md p-2.5 mt-20 lg:mt-44">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
         <img
           src={treatment}
           alt="dentist-chair"

@@ -123,7 +123,8 @@ export const authApi = baseApi.injectEndpoints({
           params.append("specialization", specialization);
         if (department !== "all") params.append("department", department);
         if (sortBy) params.append("sortBy", sortBy);
-        return `/doctor/public/all`;
+
+        return `/doctor/public/all?${params.toString()}`;
       },
       providesTags: ["PublicDentists"],
     }),

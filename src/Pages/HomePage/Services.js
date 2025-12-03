@@ -6,7 +6,7 @@ import { serviceData } from "../../Shared/Jsondata";
 
 const Services = () => {
   return (
-    <div className="max-w-7xl mx-auto rounded-md p-6 mt-32">
+    <div className="max-w-7xl mx-auto rounded-md p-2 mt-32">
       <div className="text-center">
         <SectionHeader
           icon={WormIcon}

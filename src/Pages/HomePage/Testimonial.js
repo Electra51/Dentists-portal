@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Quote } from "lucide-react";
 import { Link } from "react-router-dom";
-import PrimaryButton from "../../Components/PrimaryButton";
 import { reviewsData } from "../../Shared/Jsondata";
 import TestimonialCard from "./TestimonialCard";
 import SectionHeader from "../../Components/SectionHeader";
+import { useGetAllReviewsQuery } from "../../redux/api/reviewApi";
 
 const Testimonial = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const { data } = useGetAllReviewsQuery({
+    status: "approved",
+    page: "",
+    limit: 20,
+  });
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % reviewsData.length);
@@ -44,10 +49,10 @@ const Testimonial = () => {
           </div>
         </div>
 
-        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          {reviewsData.map((review, index) => (
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mx-0.5">
+          {data?.reviews.map((review, index) => (
             <TestimonialCard
-              key={review.id}
+              key={review._id}
               review={review}
               isActive={index === currentSlide}
             />
@@ -88,11 +93,11 @@ const Testimonial = () => {
             health.
           </p>
           <Link to={"/appointment"}>
-            <PrimaryButton
+            <button
               variant="outline"
-              className=" border border-white bg-white">
+              className="border-2 border-white rounded-md py-1.5 px-3 text-white bg-transparent hover:bg-info hover:text-white">
               Book Appointment
-            </PrimaryButton>
+            </button>
           </Link>
         </div>
         <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">

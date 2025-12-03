@@ -65,10 +65,9 @@ export default function Login() {
     }
 
     try {
-      // Auto-role for admin
       let finalRole = selectedRole;
       if (formData.email === "admin@gmail.com") {
-        finalRole = "2"; // doctor role → change to "0" if needed
+        finalRole = "2";
       }
 
       const payload = {
@@ -82,7 +81,7 @@ export default function Login() {
       localStorage.setItem("token", res.token);
       toast.success("Login Successful!");
 
-      // ✅ IMPORTANT: Redux cache reset করুন
+      // redux cache reset
       dispatch(authApi.util.resetApiState());
 
       setTimeout(() => navigate("/dashboard"), 500);
@@ -139,7 +138,6 @@ export default function Login() {
           </h2>
 
           <div className="space-y-6">
-            {/* ROLE SELECTION */}
             <div className="grid grid-cols-2 gap-4 mb-4">
               {roles.map((role) => {
                 const Icon = role.icon;
@@ -166,7 +164,6 @@ export default function Login() {
               })}
             </div>
 
-            {/* EMAIL */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -189,7 +186,6 @@ export default function Login() {
               )}
             </div>
 
-            {/* PASSWORD */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -220,7 +216,6 @@ export default function Login() {
 
             {loginError && <p className="text-red-500 text-sm">{loginError}</p>}
 
-            {/* SUBMIT */}
             <button
               onClick={handleSubmit}
               className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded-lg">
@@ -236,7 +231,6 @@ export default function Login() {
               </Link>
             </p>
 
-            {/* Divider */}
             <div className="relative my-6">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-gray-300"></div>
@@ -246,7 +240,6 @@ export default function Login() {
               </div>
             </div>
 
-            {/* GOOGLE LOGIN */}
             <button
               onClick={handleGoogleLogin}
               className="w-full border-2 border-teal-500 text-teal-600 hover:bg-teal-50 font-semibold py-3 rounded-lg flex items-center justify-center gap-2">

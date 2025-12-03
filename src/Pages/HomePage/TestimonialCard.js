@@ -1,5 +1,5 @@
 import React from "react";
-import { Star, Quote, MapPin } from "lucide-react";
+import { Star, Quote, Mail } from "lucide-react";
 
 const TestimonialCard = ({ review, isActive }) => {
   return (
@@ -7,7 +7,7 @@ const TestimonialCard = ({ review, isActive }) => {
       className={`bg-white rounded-lg p-6 md:p-8 shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 ${
         isActive ? "scale-105 border-primary/30" : ""
       }`}>
-      <div className="w-14 h-14 md:w-16 md:h-16 -mt-10 bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 rounded-full flex items-center justify-center shadow-lg mx-auto md:mx-0">
+      <div className="w-14 h-14 md:w-16 md:h-16 -mt-14 bg-gradient-to-r from-secondary to-info text-white hover:opacity-90 rounded-full flex items-center justify-center shadow-lg mx-auto md:mx-0">
         <Quote className="w-7 h-7 text-white" />
       </div>
 
@@ -15,29 +15,33 @@ const TestimonialCard = ({ review, isActive }) => {
         {[...Array(5)].map((_, index) => (
           <Star
             key={index}
-            className="w-5 h-5 text-yellow-400"
-            fill="currentColor"
+            className={`w-5 h-5 ${
+              index < review?.rating ? "text-yellow-400" : "text-gray-300"
+            }`}
+            fill={index < review?.rating ? "currentColor" : "none"}
           />
         ))}
       </div>
 
       <p className="text-gray-600 leading-relaxed mb-6 text-center md:text-left">
-        {review.review}
+        {review?.comment}
       </p>
 
       <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mb-6"></div>
 
       <div className="flex items-center gap-4">
         <img
-          src={review.img}
-          alt={review.name}
+          src={review.patient?.profileImage}
+          alt={review?.patient?.name}
           className="w-16 h-16 rounded-full object-cover border-4 border-primary/20"
         />
         <div>
-          <h4 className="font-bold text-gray-900 text-lg">{review.name}</h4>
+          <h4 className="font-bold text-gray-900 text-lg">
+            {review?.patient?.name}
+          </h4>
           <div className="flex items-center gap-1 text-gray-500 text-sm">
-            <MapPin className="w-4 h-4" />
-            <span>{review.location}</span>
+            <Mail className="w-4 h-4" />
+            <span>{review.patient?.email}</span>
           </div>
         </div>
       </div>

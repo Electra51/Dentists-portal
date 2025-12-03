@@ -19,14 +19,16 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useGetDentistDetailsQuery } from "../../redux/api/authApi";
 import Review from "./Review";
+import LoadingState from "../../Components/states/LoadingState";
+import MessageState from "../../Components/states/MessageState";
 
 const DentistDetailsPage = () => {
   const { dentistId } = useParams();
-  console.log("dentistId", dentistId);
 
   const [activeTab, setActiveTab] = useState("overview");
   const navigate = useNavigate();
   const { data, isLoading, isError } = useGetDentistDetailsQuery(dentistId);
+
   const dentist = data?.data?.dentist;
   const avgRating = data?.data?.avgRating || "0.0";
   const totalReviews = data?.data?.totalReviews || 0;
@@ -34,31 +36,23 @@ const DentistDetailsPage = () => {
   const ratingDistribution = data?.data?.ratingDistribution || {};
   const reviews = data?.data?.reviews || [];
 
-  console.log("Full API Response:", data?.data);
-
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
+      <LoadingState
+        message="Loading ..."
+        spinnerColor="border-[#5ecdc9]"
+        height={"min-h-screen"}
+      />
     );
   }
 
   if (isError || !dentist) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-600 text-xl">Failed to load dentist details</p>
-          <button
-            onClick={() => window.history.back()}
-            className="mt-4 px-6 py-2 bg-cyan-500 text-white rounded-lg">
-            Go Back
-          </button>
-        </div>
-      </div>
+      <MessageState
+        type="error"
+        title="Unable to Load Prescriptions"
+        message="Please try refreshing the page or contact support if the problem persists."
+      />
     );
   }
 

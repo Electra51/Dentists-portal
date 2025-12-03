@@ -22,7 +22,7 @@ const Footer = () => {
     },
     {
       title: "OUR ADDRESS",
-      links: ["New York - 101010 Hudson"],
+      links: ["House 15, Road No. 32, Dhanmondi Residential Area, Dhaka 1209"],
     },
   ];
   return (

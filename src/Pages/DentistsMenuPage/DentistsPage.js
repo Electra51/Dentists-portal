@@ -1,32 +1,52 @@
-import React, { useState } from "react";
-import { Users, Loader2, Sparkles, Calendar } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Users, Sparkles, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DentistCard from "../../Components/DentistCard";
 import PageHeader from "../../Components/PageHeader";
 import appointmentBg from "../../assets/images/appointment.png";
 import PrimaryButton from "../../Components/PrimaryButton";
 import { useGetAllDentistsQuery } from "../../redux/api/authApi";
-// Dentists List Page
+import LoadingState from "../../Components/states/LoadingState";
+
 const DentistsPage = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialization, setSelectedSpecialization] = useState("all");
   const [sortBy, setSortBy] = useState("rating");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  const { data, isLoading } = useGetAllDentistsQuery({
-    search: searchTerm,
-    specialization: selectedSpecialization,
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  const { data, isLoading, refetch } = useGetAllDentistsQuery({
+    search: debouncedSearch,
+    specialization:
+      selectedSpecialization === "all" ? "" : selectedSpecialization,
     sortBy,
   });
+
+  // Refetch when filters change
+  useEffect(() => {
+    refetch();
+  }, [debouncedSearch, selectedSpecialization, sortBy, refetch]);
+
   const handleViewDetails = (dentistId) => {
     navigate(`/doctors/${dentistId}`);
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
-      </div>
+      <LoadingState
+        message="Loading your dentists page..."
+        spinnerColor="border-[#5ecdc9]"
+        height={"min-h-screen"}
+      />
     );
   }
 
@@ -34,50 +54,43 @@ const DentistsPage = () => {
 
   return (
     <div className="min-h-screen">
-      {" "}
       <PageHeader
-        title={" Find Your Dentist"}
+        title={"Find Your Dentist"}
         description={"Browse verified dental professionals"}
       />
-      <div className="max-w-7xl mx-auto">
-        {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm p-3 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <input
-              type="text"
-              placeholder="Search by name, specialization..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
-            />
+      <div className="bg-white shadow-sm p-3 mb-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
+          <input
+            type="text"
+            placeholder="Search by name, specialization..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none"
+          />
 
-            {/* Specialization Filter */}
-            <select
-              value={selectedSpecialization}
-              onChange={(e) => setSelectedSpecialization(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none">
-              <option value="all">All Specializations</option>
-              <option value="Orthodontist">Orthodontist</option>
-              <option value="Pediatric Dentist">Pediatric Dentist</option>
-              <option value="Endodontist">Endodontist</option>
-              <option value="Periodontist">Periodontist</option>
-              <option value="Oral Surgeon">Oral Surgeon</option>
-            </select>
+          <select
+            value={selectedSpecialization}
+            onChange={(e) => setSelectedSpecialization(e.target.value)}
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none">
+            <option value="all">All Specializations</option>
+            <option value="Orthodontics">Orthodontics</option>
+            <option value="Pediatric Dentistry">Pediatric Dentistry</option>
+            <option value="Endodontics">Endodontics</option>
+            <option value="Periodontics">Periodontics</option>
+            <option value="Oral Surgery">Oral Surgery</option>
+          </select>
 
-            {/* Sort */}
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none">
-              <option value="rating">Highest Rated</option>
-              <option value="experience">Most Experienced</option>
-              <option value="reviews">Most Reviewed</option>
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none">
+            <option value="rating">Highest Rated</option>
+            <option value="experience">Most Experienced</option>
+            <option value="reviews">Most Reviewed</option>
+          </select>
         </div>
-
-        {/* Results Count */}
+      </div>
+      <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <p className="text-gray-600">
             Found{" "}
@@ -88,7 +101,6 @@ const DentistsPage = () => {
           </p>
         </div>
 
-        {/* Dentists Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dentists.map((dentist) => (
             <DentistCard
@@ -99,7 +111,6 @@ const DentistsPage = () => {
           ))}
         </div>
 
-        {/* Empty State */}
         {dentists.length === 0 && (
           <div className="text-center py-16">
             <div className="text-gray-400 mb-4">
@@ -160,7 +171,7 @@ const DentistsPage = () => {
 
           <PrimaryButton
             variant="outline"
-            className=" border border-white bg-white">
+            className="border border-white bg-white">
             Call Now: 1-800-DENTIST
           </PrimaryButton>
         </div>

@@ -2,6 +2,8 @@
 import React, { useState } from "react";
 import { Star, MessageSquare, ThumbsUp, Loader2 } from "lucide-react";
 import { useSubmitReviewMutation } from "../../redux/api/reviewApi";
+import toast from "react-hot-toast";
+import FormattedDate from "../../Components/DateTimeFormate/FormattedDate";
 
 const Review = ({
   doctorId,
@@ -15,17 +17,16 @@ const Review = ({
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
 
-  // API Integration
   const [submitReview, { isLoading: isSubmitting }] = useSubmitReviewMutation();
 
   const handleSubmitReview = async () => {
     if (rating === 0) {
-      alert("Please select a rating");
+      toast.error("Please select a rating");
       return;
     }
 
     if (!comment.trim()) {
-      alert("Please write a comment");
+      toast.error("Please write a comment");
       return;
     }
 
@@ -34,21 +35,18 @@ const Review = ({
         doctorId,
         rating,
         comment,
-        // appointmentId can be passed as a prop if needed
-        // appointmentId: appointmentId
       };
 
       const response = await submitReview(reviewData).unwrap();
 
-      // Reset form
       setRating(0);
       setComment("");
       setShowReviewForm(false);
 
-      alert("Review submitted successfully! Awaiting admin approval.");
+      toast.success("Review submitted successfully! Awaiting admin approval.");
     } catch (error) {
       console.error("Failed to submit review:", error);
-      alert(
+      toast.error(
         error?.data?.message || "Failed to submit review. Please try again."
       );
     }
@@ -77,15 +75,6 @@ const Review = ({
   const getRatingPercentage = (count) => {
     if (totalReviews === 0) return 0;
     return (count / totalReviews) * 100;
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
   };
 
   return (
@@ -235,7 +224,6 @@ const Review = ({
                   )}
                 </div>
 
-                {/* Review Content */}
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -248,22 +236,19 @@ const Review = ({
                         )}
                       </h4>
                       <p className="text-sm text-gray-500">
-                        {formatDate(review.createdAt)}
+                        <FormattedDate date={review.createdAt} />
                       </p>
                     </div>
                   </div>
 
-                  {/* Rating Stars */}
                   <div className="flex items-center gap-1 mb-3">
                     {renderStars(review.rating)}
                   </div>
 
-                  {/* Comment */}
                   <p className="text-gray-700 leading-relaxed mb-3">
                     {review.comment}
                   </p>
 
-                  {/* Helpful Button */}
                   <button className="text-sm text-cyan-600 hover:text-cyan-700 flex items-center gap-1 transition-colors font-medium">
                     <ThumbsUp size={16} />
                     Helpful
