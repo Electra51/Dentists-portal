@@ -9,6 +9,9 @@ import {
 import fluoride from "../assets/images/fluoride.png";
 import cavity from "../assets/images/cavity.png";
 import whitening from "../assets/images/whitening.png";
+import clock from "../assets/icons/clock.svg";
+import marker from "../assets/icons/marker.svg";
+import phone from "../assets/icons/phone.svg";
 import {
   LayoutDashboard,
   Calendar,
@@ -34,6 +37,30 @@ export const roles = [
     label: "Doctor",
     icon: Stethoscope,
     color: "bg-green-500",
+  },
+];
+
+export const cardData = [
+  {
+    id: 1,
+    infoName: "Opening Hours",
+    description: "Open 9.00am to 5.00pm everyday",
+    icon: clock,
+    bgClass: "bg-gradient-to-r from-secondary to-info",
+  },
+  {
+    id: 2,
+    infoName: "Visit our location",
+    description: "Brooklyn, NY 10036, United States",
+    icon: marker,
+    bgClass: "bg-accent",
+  },
+  {
+    id: 3,
+    infoName: "Contact us now",
+    description: "+000 123 456789",
+    icon: phone,
+    bgClass: "bg-gradient-to-r from-info to-secondary",
   },
 ];
 export const gallaryData = [
