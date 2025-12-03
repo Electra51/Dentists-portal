@@ -1,4 +1,11 @@
-import { Check, Award, Shield, Activity, BarChart3 } from "lucide-react";
+import {
+  Check,
+  Award,
+  Shield,
+  Activity,
+  BarChart3,
+  Stethoscope,
+} from "lucide-react";
 import fluoride from "../assets/images/fluoride.png";
 import cavity from "../assets/images/cavity.png";
 import whitening from "../assets/images/whitening.png";
@@ -15,6 +22,20 @@ import {
   UserCheck,
 } from "lucide-react";
 
+export const roles = [
+  {
+    id: "0",
+    label: "Patient",
+    icon: Users,
+    color: "bg-blue-500",
+  },
+  {
+    id: "1",
+    label: "Doctor",
+    icon: Stethoscope,
+    color: "bg-green-500",
+  },
+];
 export const gallaryData = [
   {
     id: 1,

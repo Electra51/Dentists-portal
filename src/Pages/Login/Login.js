@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useContext } from "react";
-import { Mail, Lock, Eye, EyeOff, Users, Stethoscope } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import LogoName from "../../Components/LogoName";
 import FooterTag from "../../Components/FooterTag";
@@ -8,6 +8,7 @@ import { AuthContext } from "../../Contexts/AuthProvider";
 import { authApi, useLoginUserMutation } from "../../redux/api/authApi";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { roles } from "../../Shared/Jsondata";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -24,21 +25,6 @@ export default function Login() {
 
   const [errors, setErrors] = useState({});
   const [loginError, setLoginError] = useState("");
-
-  const roles = [
-    {
-      id: "0",
-      label: "Patient",
-      icon: Users,
-      color: "bg-blue-500",
-    },
-    {
-      id: "1",
-      label: "Doctor",
-      icon: Stethoscope,
-      color: "bg-green-500",
-    },
-  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();

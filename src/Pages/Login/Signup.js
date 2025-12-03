@@ -1,20 +1,13 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useContext } from "react";
-import {
-  User,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Users,
-  Stethoscope,
-} from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useRegisterUserMutation } from "../../redux/api/authApi";
 import { AuthContext } from "../../Contexts/AuthProvider";
 import LogoName from "../../Components/LogoName";
 import FooterTag from "../../Components/FooterTag";
 import toast from "react-hot-toast";
+import { roles } from "../../Shared/Jsondata";
 
 export default function Signup() {
   const navigate = useNavigate();
@@ -88,7 +81,7 @@ export default function Signup() {
 
       await registerUser(payload).unwrap();
 
-      alert("Google signup successful!");
+      toast.success("Google signup successful!");
       navigate("/login");
     } catch (err) {
       console.error(err);
@@ -102,23 +95,6 @@ export default function Signup() {
       [e.target.name]: e.target.value,
     });
   };
-
-  const roles = [
-    {
-      id: "0",
-      label: "Patient",
-      icon: Users,
-      color: "bg-blue-500",
-      desc: "Book appointments",
-    },
-    {
-      id: "1",
-      label: "Doctor",
-      icon: Stethoscope,
-      color: "bg-green-500",
-      desc: "Manage patients",
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-teal-50 flex items-center justify-center p-4">
